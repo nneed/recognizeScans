@@ -1,0 +1,33 @@
+AddType text/x-component .htc
+
+Order Deny,Allow
+
+allow from all
+
+
+RewriteEngine on
+
+# не позволять httpd отдавать файлы, начинающиеся с точки (.htaccess, .svn, .git и прочие)
+RedirectMatch 403 /\..*$
+# если директория или файл существуют, использовать их напрямую
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+# иначе отправлять запрос на файл index.php
+RewriteRule . index.php
+
+RewriteCond %{REQUEST_URI} .*(favicon.ico|css.map)
+php_value date.timezone 'Europe/Moscow'
+#for remoute debug
+php_value xdebug.remote_enable 1
+php_value xdebug.remote_port 9002
+php_value xdebug.remote_host '127.0.0.1'
+php_value xdebug.remote_autostart 0
+php_value date.timezone 'Europe/Moscow'
+php_value upload_max_filesize 20G
+php_value post_max_size 20G
+php_value max_execution_time 9999
+php_value memory_limit 20G
+
+
+#for remoute debug
+
