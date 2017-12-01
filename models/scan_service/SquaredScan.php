@@ -6,7 +6,7 @@
  * Time: 18:02
  */
 namespace app\models\scan_service;
-use Yii;
+
 use yii\helpers\ArrayHelper;
 
 class SquaredScan{

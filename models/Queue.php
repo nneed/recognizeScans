@@ -10,11 +10,45 @@ use Yii;
  * This is the model class for table "queue".
  *
  * @property integer $id
- * @property string $date_time
+ * @property string $creation_time
+ * @property string $update_time
+ * @property string $abonentIdentifier
+ * @property integer $user_id
+ * @property integer $type
  * @property integer $status
+ * @property boolean $result
  */
+
 class Queue extends ActiveRecord
 {
+
+    /**
+     * statuses
+     */
+    const PENDING = 0;
+    const PROCESSING = 1;
+    const FINISHED = 2;
+    const UnknownError = 3;
+    const UserPermissionError = 4;
+    const UnsupportedOperationError = 5;
+    const InvalidAbonentStateError = 6;
+
+    public static $statuses = [
+        '' => '',  //for GridView
+        self::PENDING => 'Ожидание',
+        self::PROCESSING => 'В обработке',
+        self::FINISHED => 'Обработано',
+        self::UnknownError=>'UnknownError',
+        self::UserPermissionError=>'UserPermissionError',
+        self::UnsupportedOperationError=>'UnsupportedOperationError',
+        self::InvalidAbonentStateError=>'InvalidAbonentStateError',
+    ];
+
+    /**
+     * type
+     */
+    const COPY_CERT = 0;
+
     /**
      * @inheritdoc
      */
@@ -43,7 +77,7 @@ class Queue extends ActiveRecord
     public function rules()
     {
         return [
-            [['status'], 'required'],
+            [['status','abonentIdentifier'], 'required'],
             [['status'], 'integer'],
         ];
     }
@@ -55,7 +89,9 @@ class Queue extends ActiveRecord
     {
         return [
             'id' => 'ID',
-            'date_time' => 'Date Time',
+            'creation_time' => 'Date Time Creation',
+            'update_time' => 'Date Time Updated',
+            'abonentIdentifier' => 'Abonent Identifier',
             'status' => 'Status',
         ];
     }

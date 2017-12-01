@@ -9,6 +9,8 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use app\models\Queue;
+use app\models\QueueSearch;
 
 class SiteController extends Controller
 {
@@ -61,7 +63,40 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+
+        $searchModel = new QueueSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('index', [
+            'dataProvider' => $dataProvider,
+            'searchModel' => $searchModel
+        ]);
+    }
+
+    /**
+     * Download file.
+     *
+     */
+    public function actionDownloadResult()
+    {
+        $id = Yii::$app->request->get('id');
+        $zip = new \ZipArchive();
+        $filename = Yii::getAlias('@webroot/upload') . "/files.zip";
+        if ($zip->open($filename, \ZIPARCHIVE::CREATE)!==TRUE) {
+            exit("Невозможно открыть <$filename>\n");
+        }
+
+        $files = \yii\helpers\ArrayHelper::map(Queue::findOne($id)->files, 'id', 'data');
+        foreach ($files as $id => $path){
+            if (!is_file($path)) throw new \yii\web\NotFoundHttpException('The file does not exists.');
+            $zip->addFile($path, basename($path));
+        }
+        $zip->close();
+        Yii::$app->response->sendFile($filename);
+        if (file_exists($filename)) {
+            unlink($filename);
+        }
+
     }
 
     /**

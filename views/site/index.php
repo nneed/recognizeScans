@@ -1,53 +1,52 @@
 <?php
-
+use yii\grid\GridView;
+use yii\widgets\Pjax;
+use yii\helpers\Html;
 /* @var $this yii\web\View */
 
 $this->title = 'My Yii Application';
 ?>
 <div class="site-index">
+    <h1>Очереди</h1>
+<?php
+/*Pjax::begin();*/
+    echo GridView::widget([
+        'dataProvider' => $dataProvider,
+        'filterModel' => $searchModel,
+        'columns' => [
+            ['class' => 'yii\grid\SerialColumn'],
+            'id',
+            [
+                'attribute' => 'status',
+                'label'=>'Status',
+                'filter' => Html::activeDropDownList($searchModel, 'status', \app\models\Queue::$statuses,
+                                    ['text' => 'Please select','class'=>'form-control']),
+                'content'=>function($data){
+                    return \app\models\Queue::$statuses[$data->status];
+                }
+            ],
+            [
+                'attribute' => 'result',
+                'label'=>'result',
+                'format'=>'boolean',
+                'content'=>function($data){
+                    if ($data->result === false) {
+                        return Html::tag('span','Не удалось распознать подпись.', [ 'style'=> 'color:red;'])
+                                . Html::a('Скачать оригинал', yii\helpers\Url::toRoute(
+                                    ['site/download-result', 'id' => $data->id]), ['target'=>'_blank']);
+                    }
+                    if ($data->result === true)
+                        return Html::tag('span','Документ подсписан', [ 'style'=> 'color:green;']);
+                }
+            ],
+            'creation_time:dateTime',
+            'update_time:dateTime',
+            'abonentIdentifier',
+            'user_id',
+            //['class' => 'yii\grid\ActionColumn'],
+        ],
+    ]);
+/*Pjax::end();*/
+?>
 
-    <div class="jumbotron">
-        <h1>Congratulations!</h1>
-
-        <p class="lead">You have successfully created your Yii-powered application.</p>
-
-        <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com">Get started with Yii</a></p>
-    </div>
-
-    <div class="body-content">
-
-        <div class="row">
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/doc/">Yii Documentation &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/forum/">Yii Forum &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/extensions/">Yii Extensions &raquo;</a></p>
-            </div>
-        </div>
-
-    </div>
 </div>

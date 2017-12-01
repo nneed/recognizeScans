@@ -16,7 +16,7 @@ class m171113_090326_create_table_files extends Migration
             'id' => Schema::TYPE_PK,
             'data' => Schema::TYPE_TEXT. ' NOT NULL',
             'queue_id' => Schema::TYPE_INTEGER,
-            'result' => Schema::TYPE_BOOLEAN,
+            'signed' => Schema::TYPE_BOOLEAN,
         ]);
 
         $this->createIndex(
@@ -26,14 +26,14 @@ class m171113_090326_create_table_files extends Migration
         );
 
         // add foreign key for table `user`
-        $this->addForeignKey(
+/*        $this->addForeignKey(
             'fk-files-queue_id',
             'files',
             'queue_id',
             'queue',
             'id',
             'CASCADE'
-        );
+        );*/
     }
 
     /**

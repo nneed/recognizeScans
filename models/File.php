@@ -10,7 +10,7 @@ use Yii;
  * @property integer $id
  * @property string $data
  * @property integer $queue_id
- * @property boolean $result
+ * @property boolean $signed
  */
 class File extends \yii\db\ActiveRecord
 {
@@ -31,7 +31,7 @@ class File extends \yii\db\ActiveRecord
             [['data', 'queue_id'], 'required'],
             [['data'], 'string'],
             [['queue_id'], 'integer'],
-            [['result'], 'boolean'],
+            [['signed'], 'boolean'],
         ];
     }
 
@@ -44,7 +44,7 @@ class File extends \yii\db\ActiveRecord
             'id' => 'ID',
             'data' => 'Data',
             'queue_id' => 'Queue ID',
-            'result' => 'Result',
+            'signed' => 'Result Signed',
         ];
     }
 
