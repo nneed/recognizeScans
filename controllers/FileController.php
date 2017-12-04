@@ -1,5 +1,8 @@
 <?php
+
 namespace app\controllers;
+
+use yii;
 use app\models\Queue;
 use app\models\File;
 use app\models\scan_service\SquaredScan;
@@ -7,8 +10,7 @@ use app\models\User;
 use yii\base\Exception;
 use yii\rest\ActiveController;
 use app\queue\ScanDocJob;
-use Yii;
-use yii\httpclient\Client;
+use app\queue\EDO_FL_Client;
 use yii\web\UnauthorizedHttpException;
 
 class FileController extends ActiveController
@@ -92,9 +94,6 @@ class FileController extends ActiveController
         $queue->status = Queue::PROCESSING;
         if (!$queue->save())  throw new Exception(json_encode($queue->errors));
 
-        //Жадно загрузим все
-      //  foreach (Queue::find()->where(['id'=>$idQueue])->with('files')->each() as $queue){
-
         $files = $queue->files;
         $result = false;
             foreach ($files as $file) {
@@ -109,37 +108,19 @@ class FileController extends ActiveController
                 }
             }
 
-       $client = new Client(['baseUrl' => 'http://dev-1601/IDE.Web/']); //todo: Вынести в отдельный класс. Настройки в конфиг
+        $client = new EDO_FL_Client();
+        $response = $client->send($abonentIdentifier, $result);
 
-        $response = $client->createRequest()
-            ->setMethod('post')
-            ->setHeaders(
-                [
-                    'Authorization' => 'Basic checker:1',
-                ]
-            )
-            ->setFormat(Client::FORMAT_JSON)
-            ->setUrl('/api/Abonent/SetAbonentVerificationStatus')
-            ->setData([
-                'AbonentIdentifier' => $abonentIdentifier,
-                'IsDocumentsAccepted' => $result,
-                'RejectReason' => "",
-            ])
-            ->send();
+        if ($response->data['IsSuccess'] == true) {
 
-         if($response->data['IsSuccess'] == true){
-
-      //  if(true){
+            //  if(true){
             $queue->status = Queue::FINISHED;
             $queue->result = $result;
 
-        }else{
+        } else {
             $queue->status = array_search($response->data['ErrorType'], \app\models\Queue::$statuses);
         }
         $queue->save();
-
-        //сделать грид для отображения всех очередей там должно быть поле с результатом обработки в виде ссылки на страницу
-
     }
 
 }

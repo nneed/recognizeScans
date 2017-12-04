@@ -10,7 +10,6 @@ namespace app\queue;
 use yii\base\BaseObject;
 use app\models\Queue;
 use app\models\scan_service\SquaredScan;
-use yii\httpclient\Client;
 
 
 class ScanDocJob extends BaseObject implements \yii\queue\Job
@@ -28,9 +27,6 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
         $queue->status = Queue::PROCESSING;
         if (!$queue->save())  throw new Exception(json_encode($queue->errors));
 
-        //Жадно загрузим все
-        //  foreach (Queue::find()->where(['id'=>$idQueue])->with('files')->each() as $queue){
-
         $files = $queue->files;
         $result = false;
         foreach ($files as $file) {
@@ -45,30 +41,12 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
             }
         }
 
-        $client = new Client(['baseUrl' => 'http://dev-1601/IDE.Web/']);
+        $client = new EDO_FL_Client();
+        $response = $client->send($this->abonentIdentifier, $result);
 
-        $response = $client->createRequest()
-            ->setMethod('post')
-            ->setHeaders(
-                [
-                    'Authorization' => 'Basic checker:1',
-                ]
-            )
-            ->setFormat(Client::FORMAT_JSON)
-            ->setUrl('/api/Abonent/SetAbonentVerificationStatus')
-            ->setData([
-                'AbonentIdentifier' => $this->abonentIdentifier,
-                'IsDocumentsAccepted' => $result,
-                'RejectReason' => "",
-            ])
-            ->send();
         $queue->result = $result;
         if($response->data['IsSuccess'] == true){
-
-            //  if(true){
             $queue->status =  \app\models\Queue::FINISHED;
-
-
         }else{
             $queue->status = array_search($response->data['ErrorType'], \app\models\Queue::$statuses);
         }
