@@ -66,7 +66,9 @@ class Queue extends ActiveRecord
                     ActiveRecord::EVENT_BEFORE_INSERT => 'creation_time',
                     ActiveRecord::EVENT_BEFORE_UPDATE => 'update_time',
                 ],
-                'value' => function() { return date('U');},
+                'value' => function() {
+                    return date('Y-m-d H:i:s.u' );
+                },
             ],
         ];
     }
