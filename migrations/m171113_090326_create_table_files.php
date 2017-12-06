@@ -26,14 +26,14 @@ class m171113_090326_create_table_files extends Migration
         );
 
         // add foreign key for table `user`
-/*        $this->addForeignKey(
+        $this->addForeignKey(
             'fk-files-queue_id',
             'files',
             'queue_id',
             'queue',
             'id',
             'CASCADE'
-        );*/
+        );
     }
 
     /**
