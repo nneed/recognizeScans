@@ -25,15 +25,18 @@ class m171113_090326_create_table_files extends Migration
             'queue_id'
         );
 
-        // add foreign key for table `user`
-        $this->addForeignKey(
-            'fk-files-queue_id',
-            'files',
-            'queue_id',
-            'queue',
-            'id',
-            'CASCADE'
-        );
+        if (strpos(Yii::$app->db->dsn, 'sqlite') === false){
+            // add foreign key for table `user`
+            $this->addForeignKey(
+                'fk-files-queue_id',
+                'files',
+                'queue_id',
+                'queue',
+                'id',
+                'CASCADE'
+            );
+
+        }
     }
 
     /**
