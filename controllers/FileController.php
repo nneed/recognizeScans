@@ -20,8 +20,10 @@ class FileController extends ActiveController
     public function beforeAction($action)
     {
         $authData = Yii::$app->request->getHeaders()['Authorization'];
-        if (!$authData) throw new UnauthorizedHttpException();
-        list($username,$password) = explode(':',base64_decode(str_replace('Basic' ,'', $authData)));
+        if (!$authData) throw new UnauthorizedHttpException('Требуется авторизация');
+        $arr = explode(':',base64_decode(str_replace('Basic' ,'', $authData)));
+        if(count($arr) < 2) throw new UnauthorizedHttpException('Строка авторизации имеет не верный формат');
+        list($username,$password) = $arr;
         $user = User::findOne(['username' => $username]);
         if (!$user->validatePassword($password))
             throw new UnauthorizedHttpException();
@@ -97,19 +99,26 @@ class FileController extends ActiveController
         $files = $queue->files;
         $result = false;
             foreach ($files as $file) {
-                if ($file->signed === null){
+                if ($file->signed !== null){
                     try {
                         $squaredScan = new SquaredScan($file->data);
                         $file->signed = $result = $squaredScan->test();
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         $file->signed = false;
+                        $file->save();
+                        throw new \Exception($e->getMessage());
                     }
                     $file->save();
                 }
             }
-
-        $client = new EDO_FL_Client();
-        $response = $client->send($abonentIdentifier, $result);
+        try{
+            $client = new EDO_FL_Client();
+            $response = $client->send($abonentIdentifier, $result);
+        }catch (\Exception $e){
+            $queue->status = Queue::PENDING;
+            $queue->result = $result;
+            throw $e;
+        }
 
         if ($response->data['IsSuccess'] == true) {
 

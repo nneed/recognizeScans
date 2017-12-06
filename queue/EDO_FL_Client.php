@@ -26,7 +26,7 @@ class EDO_FL_Client
 
     public function send($abonentIdentifier, $result)
     {
-       return $this->client->createRequest()
+        $res = $this->client->createRequest()
             ->setMethod('post')
             ->setHeaders(
                 [
@@ -41,5 +41,7 @@ class EDO_FL_Client
                 'RejectReason' => "",
             ])
             ->send();
+        if (!$res->isOk) throw new \yii\web\HttpException(404, 'The requested Item could not be found.');
+        return $res;
     }
 }
