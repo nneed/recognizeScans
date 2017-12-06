@@ -39,8 +39,8 @@ $this->title = 'My Yii Application';
                         return Html::tag('span','Документ подсписан', [ 'style'=> 'color:green;']);
                 }
             ],
-            'creation_time:dateTime',
-            'update_time:dateTime',
+            'creation_time',
+            'update_time',
             'abonentIdentifier',
             'user_id',
             //['class' => 'yii\grid\ActionColumn'],
