@@ -34,12 +34,16 @@ class SquaredScan{
 
     /**
      * @param $path
+     * @throws \Exception $e
      */
     private function loadImage($path) {
 
-
-
+        try{
         $im = imagecreatefromjpeg($path);
+        }catch (\Exception $e){
+            throw new \Exception($e->getMessage());
+        }
+
         $width = imagesx($im);
         $height = imagesy($im);
         $this->im = imagecreatetruecolor(self::WIDTH, ($height * self::WIDTH)/$width);
@@ -51,37 +55,16 @@ class SquaredScan{
             $width,
             $height);
 
-
         imagefilter($this->im, IMG_FILTER_GRAYSCALE);
-/*        imagefilter($this->im, IMG_FILTER_BRIGHTNESS, 5);*/
         imagefilter($this->im, IMG_FILTER_CONTRAST, -100);
-
        // imagejpeg($this->im,  Yii::getAlias('@webroot/upload').'/merge.jpg', 100);
-
        // $imagick = new \Imagick( Yii::getAlias('@webroot/upload').'/merge.jpg');
-/*        $imagick->blackThresholdImage("#E6E6E6");
-        $imagick->whiteThresholdImage("#FCFCFC");*/
-        $adaptiveOffsetQuantum = intval(0.1 * \Imagick::getQuantum());
-       // $imagick->adaptiveThresholdImage(100,100,$adaptiveOffsetQuantum);
-
-
-        /*                $imagick->randomThresholdimage(
-                           100* \Imagick::getQuantum(),
-                           100 * \Imagick::getQuantum(),
-                            4
-                        );*/
-       // $this->im = imagecreatefromstring($imagick->getImageBlob());
-        //imagejpeg($this->im, Yii::getAlias('@webroot/upload').'/merge.jpg', 100);
-
-
     }
 
     public function output() {
         header('Content-Type: image/jpeg');
         imagejpeg($this->im, null, 100);
         imagedestroy($this->im);
-/*        imagejpeg($this->croped);
-        imagedestroy($this->croped);*/
     }
 
     public function test() {

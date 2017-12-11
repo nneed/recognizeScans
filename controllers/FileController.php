@@ -57,7 +57,7 @@ class FileController extends ActiveController
 
                  $fp = fopen( $path.'/'.$filename, "wb" );
                  if (!fwrite( $fp, base64_decode( trim($string ) ))){
-                    throw new Exception('Невозможно создать файл на сервере');
+                    throw new \Exception('Невозможно создать файл на сервере');
                  }
 
                 fclose($fp);
@@ -66,7 +66,7 @@ class FileController extends ActiveController
                 $file->data = $path.'/'.$filename;
                 $file->queue_id = $queue->id;
 
-                if (!$file->save()) throw new Exception(json_encode($file->errors));
+                if (!$file->save()) throw new \Exception(json_encode($file->errors));
 
             }
 
@@ -94,23 +94,29 @@ class FileController extends ActiveController
            // return;
         }
         $queue->status = Queue::PROCESSING;
-        if (!$queue->save())  throw new Exception(json_encode($queue->errors));
+        if (!$queue->save())  throw new \Exception(json_encode($queue->errors));
 
         $files = $queue->files;
-        $result = false;
+        $resultFalse = 0;
             foreach ($files as $file) {
-                if ($file->signed !== null){
+                if ($file->signed === null){
                     try {
                         $squaredScan = new SquaredScan($file->data);
-                        $file->signed = $result = $squaredScan->test();
+                        $file->signed = $squaredScan->test();
+                        if (!$file->signed) $resultFalse++;
                     } catch (\Exception $e) {
                         $file->signed = false;
                         $file->save();
-                        throw new \Exception($e->getMessage());
+                        $queue->status = Queue::UnknownError;
+                        $queue->result = false;
+                        $resultFalse++;
+                        $queue->save();
+                        //throw new \Exception($e->getMessage());
                     }
                     $file->save();
                 }
             }
+        $result = !((boolean)$resultFalse);
         try{
             $client = new EDO_FL_Client();
             $response = $client->send($abonentIdentifier, $result);

@@ -28,26 +28,44 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
         if (!$queue->save())  throw new Exception(json_encode($queue->errors));
 
         $files = $queue->files;
-        $result = false;
+        $resultFalse = 0;
         foreach ($files as $file) {
             if ($file->signed === null){
                 try {
                     $squaredScan = new SquaredScan($file->data);
-                    $file->signed = $result = $squaredScan->test();
-                } catch (Exception $e) { // TODO: Доделать исключение в случае ошибки распознования.
+                    $file->signed = $squaredScan->test();
+                    if (!$file->signed) $resultFalse++;
+                } catch (\Exception $e) {
                     $file->signed = false;
+                    $file->save();
+                    $queue->status = Queue::UnknownError;
+                    $queue->result = false;
+                    $resultFalse++;
+                    $queue->save();
                 }
                 $file->save();
             }
         }
+        $result = !((boolean)$resultFalse);
+        try{
+            $response = new \stdClass();
+            $response->data = ['IsSuccess'=>true];
+            $client = new EDO_FL_Client();
+            $response = $client->send($this->abonentIdentifier, $result);
+        }catch (\Exception $e){
+            $queue->status = Queue::UnknownError;
+            $queue->result = $result;
+            $queue->save();
+            throw $e;
+        }
 
-        $client = new EDO_FL_Client();
-        $response = $client->send($this->abonentIdentifier, $result);
+        if ($response->data['IsSuccess'] == true) {
 
-        $queue->result = $result;
-        if($response->data['IsSuccess'] == true){
-            $queue->status =  \app\models\Queue::FINISHED;
-        }else{
+            //  if(true){
+            $queue->status = Queue::FINISHED;
+            $queue->result = $result;
+
+        } else {
             $queue->status = array_search($response->data['ErrorType'], \app\models\Queue::$statuses);
         }
         $queue->save();
