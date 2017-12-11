@@ -46,6 +46,7 @@ class FileController extends ActiveController
         $queue->type = Queue::COPY_CERT;
         $queue->user_id = 1;
         $queue->status = Queue::PENDING;
+        $transaction = Yii::$app->db->beginTransaction();
         if ($queue->save()){
 
             foreach ($data as $string) {
@@ -55,10 +56,10 @@ class FileController extends ActiveController
 
                 $filename = $queue->id .'_'. uniqid() . '.jpg';
 
-               //return  base64_decode(trim($string));
                 $fp = fopen( $path.'/'.$filename, "wb" );
                  if (!fwrite($fp, base64_decode(trim($string)))){
-                    throw new \yii\web\BadRequestHttpException('Невозможно создать файл на сервере.',400);
+                     $transaction->rollBack();
+                     throw new \yii\web\BadRequestHttpException('Невозможно создать файл на сервере.',400);
                  }
 
                 fclose($fp);
@@ -67,20 +68,24 @@ class FileController extends ActiveController
                 $file->data = $path.'/'.$filename;
                 $file->queue_id = $queue->id;
 
-                if (!$file->save()) throw new \Exception(json_encode($file->errors));
+                if (!$file->save()) {
+                    $transaction->rollBack();
+                    throw new \Exception(json_encode($file->errors));
+                }
 
             }
-
-            Yii::$app->queue->push(new ScanDocJob([
+            $id_event = Yii::$app->queue->push(new ScanDocJob([
                 'idQueue' => $queue->id,
                 'abonentIdentifier' => $abonentIdentifier
             ]));
 
         }else{
+            $transaction->rollBack();
             throw new Exception(json_encode($queue->errors));
         }
-
-        return $queue;
+        if ($id_event === null) $transaction->rollBack();
+        $transaction->commit();
+        return $id_event;
 
     }
 
