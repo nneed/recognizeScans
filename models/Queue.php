@@ -32,16 +32,18 @@ class Queue extends ActiveRecord
     const UserPermissionError = 4;
     const UnsupportedOperationError = 5;
     const InvalidAbonentStateError = 6;
+    const InvalidInputParametrs = 7;
 
     public static $statuses = [
         '' => '',  //for GridView
         self::PENDING => 'Ожидание',
         self::PROCESSING => 'В обработке',
         self::FINISHED => 'Обработано',
-        self::UnknownError=>'UnknownError',
-        self::UserPermissionError=>'UserPermissionError',
-        self::UnsupportedOperationError=>'UnsupportedOperationError',
-        self::InvalidAbonentStateError=>'InvalidAbonentStateError',
+        self::UnknownError=>'Непредвиденная ошибка отправки результатов',
+        self::UserPermissionError=>'Пользователь не обладает необходимыми правами для изменения статуса проверки абонента',
+        self::UnsupportedOperationError=>'Сервис ЭДО ФЛ не настроен на использование сервисов автоматической проверки',
+        self::InvalidAbonentStateError=>'Абонент не ожидает установки сервисом проверки своего статуса или не найден',
+        self::InvalidInputParametrs=>'Входные параметры ошибочны',
     ];
 
     /**
