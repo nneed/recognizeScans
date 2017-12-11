@@ -34,12 +34,12 @@ $this->title = 'My Yii Application';
                         return Html::tag('span','Не удалось распознать подпись.', [ 'style'=> 'color:red;'])
                                 . Html::a('Скачать оригиналы', yii\helpers\Url::toRoute(
                                     ['site/download-result', 'id' => $data->id]), ['target'=>'_blank']);
+                    }else if ($data->result === true) {
+                        return Html::tag('span', 'Документы подписаны.', ['style' => 'color:green;']) . Html::a('Скачать оригиналы', yii\helpers\Url::toRoute(['site/download-result', 'id' => $data->id]), ['target' => '_blank']);
+                        //   return Html::tag('span','Документ подсписан', [ 'style'=> 'color:green;']);
+                    }else{
+                        return Html::a('Скачать оригиналы', yii\helpers\Url::toRoute(['site/download-result', 'id' => $data->id]), ['target' => '_blank']);
                     }
-                    if ($data->result === true)
-                        return Html::tag('span','Документы подписаны.', [ 'style'=> 'color:green;'])
-                            . Html::a('Скачать оригиналы', yii\helpers\Url::toRoute(
-                                ['site/download-result', 'id' => $data->id]), ['target'=>'_blank']);
-                     //   return Html::tag('span','Документ подсписан', [ 'style'=> 'color:green;']);
                 }
             ],
             'creation_time',

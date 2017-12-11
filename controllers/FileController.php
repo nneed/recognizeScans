@@ -55,9 +55,10 @@ class FileController extends ActiveController
 
                 $filename = $queue->id .'_'. uniqid() . '.jpg';
 
-                 $fp = fopen( $path.'/'.$filename, "wb" );
-                 if (!fwrite( $fp, base64_decode( trim($string ) ))){
-                    throw new \Exception('Невозможно создать файл на сервере');
+               //return  base64_decode(trim($string));
+                $fp = fopen( $path.'/'.$filename, "wb" );
+                 if (!fwrite($fp, base64_decode(trim($string)))){
+                    throw new \yii\web\BadRequestHttpException('Невозможно создать файл на сервере.',400);
                  }
 
                 fclose($fp);
@@ -88,46 +89,47 @@ class FileController extends ActiveController
     {
         $abonentIdentifier = yii::$app->request->get('abonentIdentifier');
         $idQueue = yii::$app->request->get('id');
-
         $queue = Queue::findOne($idQueue);
+
         if ($queue->status != Queue::PENDING){
-           // return;
+            return;
         }
         $queue->status = Queue::PROCESSING;
-        if (!$queue->save())  throw new \Exception(json_encode($queue->errors));
+        if (!$queue->save())  throw new Exception(json_encode($queue->errors));
 
         $files = $queue->files;
         $resultFalse = 0;
-            foreach ($files as $file) {
-                if ($file->signed === null){
-                    try {
-                        $squaredScan = new SquaredScan($file->data);
-                        $file->signed = $squaredScan->test();
-                        if (!$file->signed) $resultFalse++;
-                    } catch (\Exception $e) {
-                        $file->signed = false;
-                        $file->save();
-                        $queue->status = Queue::UnknownError;
-                        $queue->result = false;
-                        $resultFalse++;
-                        $queue->save();
-                        //throw new \Exception($e->getMessage());
-                    }
+        foreach ($files as $file) {
+            if ($file->signed === null){
+                try {
+                    $squaredScan = new SquaredScan($file->data);
+                    $file->signed = $squaredScan->test();
+                    if (!$file->signed) $resultFalse++;
+                } catch (\Exception $e) {
+                    $file->signed = false;
                     $file->save();
+                    $queue->status = Queue::UnknownError;
+                    $queue->result = false;
+                    $resultFalse++;
+                    $queue->save();
                 }
+                $file->save();
             }
+        }
         $result = !((boolean)$resultFalse);
         try{
+            $response = new \stdClass();
+            $response->data = ['IsSuccess'=>true];
             $client = new EDO_FL_Client();
             $response = $client->send($abonentIdentifier, $result);
         }catch (\Exception $e){
-            $queue->status = Queue::PENDING;
+            $queue->status = Queue::UnknownError;
             $queue->result = $result;
+            $queue->save();
             throw $e;
         }
 
         if ($response->data['IsSuccess'] == true) {
-
             //  if(true){
             $queue->status = Queue::FINISHED;
             $queue->result = $result;
