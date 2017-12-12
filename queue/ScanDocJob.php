@@ -10,7 +10,8 @@ namespace app\queue;
 use yii\base\BaseObject;
 use app\models\Queue;
 use app\models\scan_service\SquaredScan;
-
+use yii;
+use \Exception;
 
 class ScanDocJob extends BaseObject implements \yii\queue\Job
 {
@@ -35,13 +36,14 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
                     $squaredScan = new SquaredScan($file->data);
                     $file->signed = $squaredScan->test();
                     if (!$file->signed) $resultFalse++;
-                } catch (\Exception $e) {
+                }catch (Exception $e) {
                     $file->signed = false;
                     $file->save();
                     $queue->status = Queue::UnknownError;
                     $queue->result = false;
                     $resultFalse++;
                     $queue->save();
+                    yii::error($e);
                 }
                 $file->save();
             }
@@ -52,7 +54,7 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
             $response->data = ['IsSuccess'=>true];
             $client = new EDO_FL_Client();
             $response = $client->send($this->abonentIdentifier, $result);
-        }catch (\Exception $e){
+        }catch (Exception $e){
             $queue->status = Queue::UnknownError;
             $queue->result = $result;
             $queue->save();

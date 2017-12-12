@@ -41,7 +41,7 @@ class EDO_FL_Client
                 'RejectReason' => "",
             ])
             ->send();
-        if (!$res->isOk) throw new \yii\web\HttpException(404, var_export($res->content));
+        if (!$res->isOk) throw new \yii\web\HttpException(404, $res->content );
         return $res;
     }
 }
