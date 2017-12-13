@@ -51,8 +51,8 @@ class FileController extends ActiveController
 
             foreach ($data as $string) {
 
-                $path = Yii::getAlias('@webroot/upload');
-                if (!file_exists($path)) mkdir($path, 0755);
+                $path = Yii::getAlias('@runtime/scans');
+                if (!file_exists($path)) mkdir($path, 0777);
 
                 $filename = $queue->id .'_'. uniqid() . '.jpg';
 
@@ -131,7 +131,7 @@ class FileController extends ActiveController
             $queue->status = Queue::UnknownError;
             $queue->result = $result;
             $queue->save();
-            throw $e;
+            throw new \yii\web\HttpException(404, $e->getMessage());
         }
 
         if ($response->data['IsSuccess'] == true) {
