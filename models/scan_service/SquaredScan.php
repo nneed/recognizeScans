@@ -39,7 +39,14 @@ class SquaredScan{
     private function loadImage($path) {
 
         try{
-        $im = imagecreatefromjpeg($path);
+       // $im = imagecreatefromjpeg($path);
+        $imagick = new \Imagick();
+        $imagick->readImage($path);
+        $imagick->blurImage(5,2);
+        $imagick->blackThresholdImage('#7F7F80');
+   //     $imagick->whiteThresholdImage('#7F7F80');
+
+        $im = imagecreatefromstring($imagick->getImageBlob());
         }catch (\Exception $e){
             throw new \Exception($e->getMessage());
         }
@@ -56,8 +63,8 @@ class SquaredScan{
             $height);
 
         imagefilter($this->im, IMG_FILTER_GRAYSCALE);
-        imagefilter($this->im, IMG_FILTER_CONTRAST, -100);
-       // imagejpeg($this->im,  Yii::getAlias('@webroot/upload').'/merge.jpg', 100);
+      //  imagefilter($this->im, IMG_FILTER_CONTRAST, -100);
+        imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/merge.jpg', 100);
        // $imagick = new \Imagick( Yii::getAlias('@webroot/upload').'/merge.jpg');
     }
 
@@ -140,7 +147,7 @@ class SquaredScan{
 
         $length[0] = sqrt(pow($this->corners[0]->x - $this->corners[1]->x,2) + pow($this->corners[0]->y - $this->corners[1]->y,2));
         $length[1] = sqrt(pow($this->corners[1]->x - $this->corners[2]->x,2) + pow($this->corners[1]->y - $this->corners[2]->y,2));
-        $length[2] = sqrt(pow($this->corners[2]->x - $this->corners[0]->x,2) + pow($this->corners[2]->y - $this->corners[0]->y,2));
+        $length[2] = sqrt(pow($this->corners[0]->x - $this->corners[2]->x,2) + pow($this->corners[0]->y - $this->corners[2]->y,2));
 
         unset($length[array_search( max($length), $length)]);
         $pointBottom = $this->corners[array_search( max($length), $length)];
@@ -152,9 +159,11 @@ class SquaredScan{
         //$angle = atan(($pointBottom->x - $pointLeftTop->x) / ($pointBottom->y - $pointLeftTop->y));
         imageline($this->im, $arrX, $arrYMax, $arrX, $arrYMin, imagecolorallocate($this->im, 255, 255, 0));
 
+        imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/merge.jpg', 100);
         $rate = 0;
         if($pointBottom->y - $pointLeftTop->y < 0 ) $rate = 180;
-        $angle = atan(($pointLeftTop->x - $pointBottom->x) / ($pointBottom->y - $pointLeftTop->y))*180/pi() +$rate;
+        //$angle = atan(($pointLeftTop->x - $pointBottom->x) / ($pointBottom->y - $pointLeftTop->y))*180/pi() +$rate;
+        $angle = 0;
        // $angle = 1;
 /*        if ( $pointBottom->y - $pointLeftTop->y <= 0){
             $angle = 4.71239;
@@ -193,15 +202,16 @@ class SquaredScan{
 
 
         //$p = new Point(imagesx($this->im)/2+$endPoint->x, $endPoint->y - 40);
-        imagecopyresampled (
+/*        imagecopyresampled (
             $this->im,
             $this->im, 0, 0, 0, 0,
             self::WIDTH,
             ($height * self::WIDTH)/$width,
             $width,
-            $height);
+            $height);*/
         $p = new Point(400, 1000);
         $this->SmartSelect($p, true);
+        imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/color.jpg', 100);
         return $this->validate;
 //        imagefilledellipse($this->im,$p->x,$p->y,10,10,$green);
     }

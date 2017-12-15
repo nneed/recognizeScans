@@ -32,7 +32,8 @@ class Point {
         $r = ($rgb >> 16) & 0xFF;
         $g = ($rgb >> 8) & 0xFF;
         $b = $rgb & 0xFF;
-        return $r == 0 && $g == 0 && $b == 0;
+        //return $r == 0 && $g == 0 && $b == 0;
+        return $r <= 5 && $g <= 5 && $b <= 5;
     }
 
     /**
@@ -41,7 +42,9 @@ class Point {
      * @return bool
      */
     public function insideBlackSquare($im, $size) {
-        foreach ($this->getNeighbours($size)->getPoints() as $p) {
+        $size = $this->getNeighbours($size);
+        if(!$size) return false;
+        foreach ($size->getPoints() as $p) {
             if(!$p->isBlack($im))
                 return false;
         }
@@ -55,7 +58,9 @@ class Point {
     private function getNeighbours($size) {
         $map = new PointMap();
         $gap = $size/2 -1;
-        for($x = $this->x - $gap; $x < $this->x + $gap; $x++) {
+        $x = $this->x - $gap;
+        if($x <= 0) return false;
+        for($x; $x < $this->x + $gap; $x++) {
             for($y = $this->y - $gap; $y < $this->y + $gap; $y++) {
                 $map->addPoint(new Point($x, $y));
             }
