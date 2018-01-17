@@ -47,6 +47,7 @@ class SquaredScan{
    //     $imagick->whiteThresholdImage('#7F7F80');
 
         $im = imagecreatefromstring($imagick->getImageBlob());
+        unset($imagick);
         }catch (\Exception $e){
             throw new \Exception($e->getMessage());
         }
@@ -79,8 +80,8 @@ class SquaredScan{
         $width = imagesx($this->im);
         $height = imagesy($this->im);
         $step = 0;
-        $min_x = 0;
-        $min_y = 0;
+        $min_x = 40;
+        $min_y = 40;
         $max_x = $width;
         $max_y = $height;
 
@@ -141,79 +142,66 @@ class SquaredScan{
         imageline($this->im, $this->corners[0]->x, $this->corners[0]->y, $this->corners[1]->x, $this->corners[1]->y, $green);
         imageline($this->im, $this->corners[1]->x, $this->corners[1]->y, $this->corners[2]->x, $this->corners[2]->y, $green);
         imageline($this->im, $this->corners[0]->x, $this->corners[0]->y, $this->corners[2]->x, $this->corners[2]->y, $green);
-//        imageline($this->im, $this->corners[0]->x, $this->corners[0]->y, $width, $this->corners[0]->y, $green);
 
 
 
-        $length[0] = sqrt(pow($this->corners[0]->x - $this->corners[1]->x,2) + pow($this->corners[0]->y - $this->corners[1]->y,2));
+/*        $length[0] = sqrt(pow($this->corners[0]->x - $this->corners[1]->x,2) + pow($this->corners[0]->y - $this->corners[1]->y,2));
         $length[1] = sqrt(pow($this->corners[1]->x - $this->corners[2]->x,2) + pow($this->corners[1]->y - $this->corners[2]->y,2));
-        $length[2] = sqrt(pow($this->corners[0]->x - $this->corners[2]->x,2) + pow($this->corners[0]->y - $this->corners[2]->y,2));
+        $length[2] = sqrt(pow($this->corners[0]->x - $this->corners[2]->x,2) + pow($this->corners[0]->y - $this->corners[2]->y,2));*/
 
-        unset($length[array_search( max($length), $length)]);
-        $pointBottom = $this->corners[array_search( max($length), $length)];
-        $pointLeftTop = $this->corners[array_search( min($length), $length)];
-        $minLength = min($length);
-        $arrX = min(ArrayHelper::map($this->corners, 'x','x'));
-        $arrYMax = max(ArrayHelper::map($this->corners, 'y','y'));
-        $arrYMin = min(ArrayHelper::map($this->corners, 'y','y'));
-        //$angle = atan(($pointBottom->x - $pointLeftTop->x) / ($pointBottom->y - $pointLeftTop->y));
-        imageline($this->im, $arrX, $arrYMax, $arrX, $arrYMin, imagecolorallocate($this->im, 255, 255, 0));
 
-        imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/merge.jpg', 100);
-        $rate = 0;
-        if($pointBottom->y - $pointLeftTop->y < 0 ) $rate = 180;
-        //$angle = atan(($pointLeftTop->x - $pointBottom->x) / ($pointBottom->y - $pointLeftTop->y))*180/pi() +$rate;
-        $angle = 0;
-       // $angle = 1;
-/*        if ( $pointBottom->y - $pointLeftTop->y <= 0){
-            $angle = 4.71239;
-            $this->im = imagerotate($this->im, 90, $white);
-        }else{
-            $angle = atan(($pointBottom->x - $pointLeftTop->x)/($pointBottom->y - $pointLeftTop->y));
-            if ($angle > 0){
-                $this->im = imagerotate($this->im, -$angle*180/pi(), $white);
+
+        $topSpace = $height/2;
+        $leftSpace = $width/2;
+        $sides = [];
+
+
+
+
+
+        foreach ($this->corners as $val){
+            if($val->y <= $topSpace){
+                $sides['top'][] = $val;
+            }if($val->x <= $leftSpace){
+                $sides['left'][] = $val;
+            }if($val->x > $leftSpace){
+                $sides['right'][] = $val;
+            }if($val->y > $topSpace){
+                $sides['bottom'][] = $val;
             }
-        }*/
-        $centerPoint = new Point((int)(imagesx($this->im)/2),(int)(imagesy($this->im)/2));
+        }
 
-        $this->im = imagerotate($this->im, $angle, $white);
-//        imagejpeg($this->im, Yii::getAlias('@webroot/upload').'/rotate.jpg', 100);
+        $angle = 0;
 
-       // $xgap = $pointBottom->x + cos(deg2rad($angle)) * $minLength;
-       // $ygap = $pointBottom->y - sin(deg2rad($angle)) * $minLength;
+        foreach ($sides as $key => $side){
+            if (count($side) == 2){
+                if ($key == 'top' || $key == 'bottom'){
+                    $angle = atan(($side[1]->x - $side[0]->x)/($side[1]->y - $side[0]->y))*180/pi();
+                    break;
+                }else{
+                    if ($side[1]->y - $side[0]->y > 0){
+                        $angle = atan(($side[1]->y - $side[0]->y)/($side[1]->x - $side[0]->x))*180/pi();
+                    }
+                    break;
+                }
 
-        $w = 100;
-        $h = 100;
-//        imageline($this->im,
-//            $this->corners[1]->x + $xgap,
-//            $this->corners[1]->y + $ygap,
-//            $this->corners[1]->x + $xgap + $w,
-//            $this->corners[1]->y + $ygap,
-//            $red);
+            }
+        }
 
-        $currentAngleRad = deg2rad($angle);
+        if (count($sides['bottom'] == 2) && count($sides['right'] == 2)){
+            $angle = atan(($side[1]->y - $side[0]->y)/($side[1]->x - $side[0]->x))*180/pi()-180;
+        }
 
-        $endPoint = new Point(0,0);
-        $startPoint = new Point ( $pointBottom->x + $centerPoint->x, $pointBottom->y - $centerPoint->y );
-        $endPoint->x = $startPoint->x * cos($currentAngleRad) - $pointBottom->y * sin($currentAngleRad);
-        $endPoint->y = $pointBottom->x * sin($currentAngleRad) + $pointBottom->y * cos($currentAngleRad);
-        $endPoint->x += $centerPoint->x;
-        $endPoint->y += $centerPoint->y;
+        $this->im = imagerotate($this->im, -$angle, $white);
+        imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/color.jpg', 100);
 
-
-        //$p = new Point(imagesx($this->im)/2+$endPoint->x, $endPoint->y - 40);
-/*        imagecopyresampled (
-            $this->im,
-            $this->im, 0, 0, 0, 0,
-            self::WIDTH,
-            ($height * self::WIDTH)/$width,
-            $width,
-            $height);*/
-        $p = new Point(400, 1000);
+        $width = imagesx($this->im);
+        $height = imagesy($this->im);
+        $p = new Point($width/2*1.5, $height*0.86);
         $this->SmartSelect($p, true);
         imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/color.jpg', 100);
         return $this->validate;
-//        imagefilledellipse($this->im,$p->x,$p->y,10,10,$green);
+
     }
 
     public function SmartSelect($center, $color = null) {
