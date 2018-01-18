@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\File;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -11,6 +12,7 @@ use app\models\LoginForm;
 use app\models\ContactForm;
 use app\models\Queue;
 use app\models\QueueSearch;
+use app\models\scan_service\SquaredScan;
 
 class SiteController extends Controller
 {
@@ -97,6 +99,18 @@ class SiteController extends Controller
             unlink($filename);
         }
 
+    }
+
+    public function actionShowResult()
+    {
+
+        $id = Yii::$app->request->get('id');
+        $file = File::find()->where(['queue_id' => $id])->one();
+        $squaredScan = new SquaredScan($file->data);
+        $headers = Yii::$app->response->headers;
+        $headers->set('Content-Type', 'image/jpeg');
+        Yii::$app->response->format = Response::FORMAT_RAW;
+        $squaredScan->test();
     }
 
     /**

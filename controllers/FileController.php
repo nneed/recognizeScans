@@ -17,7 +17,7 @@ class FileController extends ActiveController
 {
     public $modelClass = 'app\models\Queue';
 
-    public function beforeAction($action)
+/*    public function beforeAction($action)
     {
         $authData = Yii::$app->request->getHeaders()['Authorization'];
         if (!$authData) throw new UnauthorizedHttpException('Требуется авторизация');
@@ -28,7 +28,7 @@ class FileController extends ActiveController
         if (!$user->validatePassword($password))
             throw new UnauthorizedHttpException();
         return parent::beforeAction($action);
-    }
+    }*/
 
     public function actions()
     {
@@ -85,7 +85,7 @@ class FileController extends ActiveController
         }
         if ($id_event === null) $transaction->rollBack();
         $transaction->commit();
-        return $id_event;
+        return $queue->id;
 
     }
 
@@ -144,5 +144,7 @@ class FileController extends ActiveController
         }
         $queue->save();
     }
+
+
 
 }

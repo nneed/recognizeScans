@@ -8,7 +8,7 @@
 namespace app\models\scan_service;
 
 use yii\helpers\ArrayHelper;
-
+use yii;
 class SquaredScan{
 
     const WIDTH = 800;
@@ -156,9 +156,6 @@ class SquaredScan{
         $sides = [];
 
 
-
-
-
         foreach ($this->corners as $val){
             if($val->y <= $topSpace){
                 $sides['top'][] = $val;
@@ -173,10 +170,25 @@ class SquaredScan{
 
         $angle = 0;
 
-        foreach ($sides as $key => $side){
+        if(count($sides['top']) == 2 && count($sides['left']) == 2){ // наклон меньше 90
+            $angle = atan(($sides['top'][1]->y - $sides['top'][0]->y)/($sides['top'][1]->x - $sides['top'][0]->x))*180/pi();
+        }
+        if(count($sides['top']) == 2 && count($sides['right']) == 2){ // наклон больше 90
+            $angle = atan(($sides['top'][1]->y - $sides['top'][0]->y)/($sides['top'][1]->x - $sides['top'][0]->x))*180/pi() + 90;
+        }
+        if(count($sides['bottom']) == 2 && count($sides['right']) == 2){ // наклон больше 180
+            $angle = atan(($sides['bottom'][1]->y - $sides['bottom'][0]->y)/($sides['bottom'][1]->x - $sides['bottom'][0]->x))*180/pi() + 180;
+        }
+        if(count($sides['bottom']) == 2 && count($sides['left']) == 2){ // наклон больше 270
+            $angle = atan(($sides['bottom'][1]->y - $sides['bottom'][0]->y)/($sides['bottom'][1]->x - $sides['bottom'][0]->x))*180/pi() + 270;
+        }
+
+
+ /*       foreach ($sides as $key => $side){
             if (count($side) == 2){
                 if ($key == 'top' || $key == 'bottom'){
-                    $angle = atan(($side[1]->x - $side[0]->x)/($side[1]->y - $side[0]->y))*180/pi();
+                    //$angle = atan(($side[1]->x - $side[0]->x)/($side[1]->y - $side[0]->y))*180/pi();
+                    $angle = atan(($side[1]->y - $side[0]->y)/($side[1]->x - $side[0]->x))*180/pi();
                     break;
                 }else{
                     if ($side[1]->y - $side[0]->y > 0){
@@ -188,11 +200,12 @@ class SquaredScan{
             }
         }
 
-        if (count($sides['bottom'] == 2) && count($sides['right'] == 2)){
+        if (count($sides['bottom']) == 2 && count($sides['right']) == 2){
             $angle = atan(($side[1]->y - $side[0]->y)/($side[1]->x - $side[0]->x))*180/pi()-180;
         }
+ */
 
-        $this->im = imagerotate($this->im, -$angle, $white);
+        $this->im = imagerotate($this->im, $angle, $white);
         imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/color.jpg', 100);
 
         $width = imagesx($this->im);
@@ -200,6 +213,7 @@ class SquaredScan{
         $p = new Point($width/2*1.5, $height*0.86);
         $this->SmartSelect($p, true);
         imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/color.jpg', 100);
+        return $this->output();
         return $this->validate;
 
     }
@@ -364,6 +378,30 @@ class SquaredScan{
         return ($black * 100 / $px_count) > 2;
 
     }
+/*    public function ValidateResult() {
+        $width = imagesx($this->im);
+        $height = imagesy($this->im);
+        $result = true;
+        $is_full = 0;
+        for($i = 0; $i < $width; $i++) {
+            if($this->isRed($p = new Point( $i, 0)) || $this->isRed($p = new Point( $i, $height))){
+                $is_full = 1;
+                $result = false;
+            }
+        }
+        for($i = 0; $i < $height; $i++) {
+            if($this->isRed($p = new Point(0, $i)) || $this->isRed($p = new Point($width, $i))){
+                $is_full = 1;
+                $result = false;
+            }
+        }
+        if(count($this->new_colored) < ($width*$height) * 0.25){
+            $this->log('INSIDE SMALL AREA');
+            $result = false;
+        }
+        if($is_full) $this->log('FULL COLORED');
+        return $result;
+    }*/
 
 
 }
