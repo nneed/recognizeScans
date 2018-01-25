@@ -89,7 +89,6 @@ class SquaredScan{
 
         $green = imagecolorallocate($this->im, 0, 255, 0);
         $red = imagecolorallocate($this->im, 255, 0, 0);
-        $white = imagecolorallocate($this->im, 255, 255, 255);
 
         while ($step < 100 && $max_points < 3) {
             for ($i = $min_x; $i < $max_x; $i++) {
@@ -145,71 +144,37 @@ class SquaredScan{
 
 
 
-/*        $length[0] = sqrt(pow($this->corners[0]->x - $this->corners[1]->x,2) + pow($this->corners[0]->y - $this->corners[1]->y,2));
+        $length[0] = sqrt(pow($this->corners[0]->x - $this->corners[1]->x,2) + pow($this->corners[0]->y - $this->corners[1]->y,2));
         $length[1] = sqrt(pow($this->corners[1]->x - $this->corners[2]->x,2) + pow($this->corners[1]->y - $this->corners[2]->y,2));
-        $length[2] = sqrt(pow($this->corners[0]->x - $this->corners[2]->x,2) + pow($this->corners[0]->y - $this->corners[2]->y,2));*/
+        $length[2] = sqrt(pow($this->corners[0]->x - $this->corners[2]->x,2) + pow($this->corners[0]->y - $this->corners[2]->y,2));
+
+        $this->Rotate();
+
+        $arrXMin = min(ArrayHelper::map($this->corners, 'x','x'));
+        $arrXMax = max(ArrayHelper::map($this->corners, 'x','x'));
+        $arrYMax = max(ArrayHelper::map($this->corners, 'y','y'));
+        $arrYMin = min(ArrayHelper::map($this->corners, 'y','y'));
+
+        $SizeWidth = $arrXMax - $arrXMin;
+        $SizeHeight = $arrYMax - $arrYMin;
 
 
+/*        $this->im = imagecrop($this->im,[
+            'x' => $arrXMin,
+            'y' => $arrYMin,
+            'width' => $SizeWidth,
+            'height' => $SizeHeight
+        ]);*/
 
-        $topSpace = $height/2;
-        $leftSpace = $width/2;
-        $sides = [];
-
-
-        foreach ($this->corners as $val){
-            if($val->y <= $topSpace){
-                $sides['top'][] = $val;
-            }if($val->x <= $leftSpace){
-                $sides['left'][] = $val;
-            }if($val->x > $leftSpace){
-                $sides['right'][] = $val;
-            }if($val->y > $topSpace){
-                $sides['bottom'][] = $val;
-            }
-        }
-
-        $angle = 0;
-
-        if(count($sides['top']) == 2 && count($sides['left']) == 2){ // наклон меньше 90
-            $angle = atan(($sides['top'][1]->y - $sides['top'][0]->y)/($sides['top'][1]->x - $sides['top'][0]->x))*180/pi();
-        }
-        if(count($sides['top']) == 2 && count($sides['right']) == 2){ // наклон больше 90
-            $angle = atan(($sides['top'][1]->y - $sides['top'][0]->y)/($sides['top'][1]->x - $sides['top'][0]->x))*180/pi() + 90;
-        }
-        if(count($sides['bottom']) == 2 && count($sides['right']) == 2){ // наклон больше 180
-            $angle = atan(($sides['bottom'][1]->y - $sides['bottom'][0]->y)/($sides['bottom'][1]->x - $sides['bottom'][0]->x))*180/pi() + 180;
-        }
-        if(count($sides['bottom']) == 2 && count($sides['left']) == 2){ // наклон больше 270
-            $angle = atan(($sides['bottom'][1]->y - $sides['bottom'][0]->y)/($sides['bottom'][1]->x - $sides['bottom'][0]->x))*180/pi() + 270;
-        }
-
-
- /*       foreach ($sides as $key => $side){
-            if (count($side) == 2){
-                if ($key == 'top' || $key == 'bottom'){
-                    //$angle = atan(($side[1]->x - $side[0]->x)/($side[1]->y - $side[0]->y))*180/pi();
-                    $angle = atan(($side[1]->y - $side[0]->y)/($side[1]->x - $side[0]->x))*180/pi();
-                    break;
-                }else{
-                    if ($side[1]->y - $side[0]->y > 0){
-                        $angle = atan(($side[1]->y - $side[0]->y)/($side[1]->x - $side[0]->x))*180/pi();
-                    }
-                    break;
-                }
-
-            }
-        }
-
-        if (count($sides['bottom']) == 2 && count($sides['right']) == 2){
-            $angle = atan(($side[1]->y - $side[0]->y)/($side[1]->x - $side[0]->x))*180/pi()-180;
-        }
- */
-
-        $this->im = imagerotate($this->im, $angle, $white);
         imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/color.jpg', 100);
 
         $width = imagesx($this->im);
         $height = imagesy($this->im);
+        unset($length[array_search(max($length),$length)]);
+        $maxLength = max($length);
+        $minLength = min($length);
+        $rateWidth = $width/$minLength;
+        $rateHeight = $height/$maxLength;
         $p = new Point($width/2*1.5, $height*0.86);
         $this->SmartSelect($p, true);
         imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/color.jpg', 100);
@@ -358,7 +323,7 @@ class SquaredScan{
     /**
      * @return bool
      */
-    private function ValidateResult()
+ /*   private function ValidateResult()
     {
         $h = imagesy($this->croped);
         $w = imagesx($this->croped);
@@ -377,10 +342,16 @@ class SquaredScan{
         }
         return ($black * 100 / $px_count) > 2;
 
+    }*/
+    public function isRed(Point $p){
+        if( imagecolorat($this->croped, $p->x, $p->y) != 16711680){
+            return true;
+        }
     }
-/*    public function ValidateResult() {
-        $width = imagesx($this->im);
-        $height = imagesy($this->im);
+
+    public function ValidateResult() {
+        $width = imagesx($this->croped);
+        $height = imagesy($this->croped);
         $result = true;
         $is_full = 0;
         for($i = 0; $i < $width; $i++) {
@@ -395,13 +366,57 @@ class SquaredScan{
                 $result = false;
             }
         }
-        if(count($this->new_colored) < ($width*$height) * 0.25){
-            $this->log('INSIDE SMALL AREA');
+        if(count($this->new_colored) < ($width*$height) * 0.9){
+            //$this->log('INSIDE SMALL AREA');
             $result = false;
         }
-        if($is_full) $this->log('FULL COLORED');
+       // if($is_full) $this->log('FULL COLORED');
         return $result;
-    }*/
+    }
 
+    public function Rotate() {
+
+        $width = imagesx($this->im);
+        $height = imagesy($this->im);
+
+        $angle = 0;
+        $rate = 0;
+
+        $topSpace = $height/2;
+        $leftSpace = $width/2;
+        $sides = [];
+
+        $white = imagecolorallocate($this->im, 255, 255, 255);
+
+        foreach ($this->corners as $val){
+            if($val->y <= $topSpace){
+                $sides['top'][] = $val;
+            }if($val->x <= $leftSpace){
+                $sides['left'][] = $val;
+            }if($val->x > $leftSpace){
+                $sides['right'][] = $val;
+            }if($val->y > $topSpace){
+                $sides['bottom'][] = $val;
+            }
+        }
+
+        if(count($sides['top']) == 2 ){
+            if(count($sides['right']) == 2){
+                $rate = 90;
+            }
+            $angle = atan(($sides['top'][1]->y - $sides['top'][0]->y)/($sides['top'][1]->x - $sides['top'][0]->x))*180/pi() + $rate;
+        }
+
+        if(count($sides['bottom']) == 2){
+            if (count($sides['right']) == 2){
+                $rate = 180;
+            }else{
+                $rate = 270;
+            }
+            $angle = atan(($sides['bottom'][1]->y - $sides['bottom'][0]->y)/($sides['bottom'][1]->x - $sides['bottom'][0]->x))*180/pi() + $rate;
+        }
+
+        $this->im = imagerotate($this->im, $angle, $white);
+    }
 
 }
