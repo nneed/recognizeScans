@@ -17,7 +17,7 @@ class FileController extends ActiveController
 {
     public $modelClass = 'app\models\Queue';
 
-/*    public function beforeAction($action)
+    public function beforeAction($action)
     {
         $authData = Yii::$app->request->getHeaders()['Authorization'];
         if (!$authData) throw new UnauthorizedHttpException('Требуется авторизация');
@@ -28,7 +28,7 @@ class FileController extends ActiveController
         if (!$user->validatePassword($password))
             throw new UnauthorizedHttpException();
         return parent::beforeAction($action);
-    }*/
+    }
 
     public function actions()
     {
@@ -123,8 +123,6 @@ class FileController extends ActiveController
         }
         $result = !((boolean)$resultFalse);
         try{
-            $response = new \stdClass();
-            $response->data = ['IsSuccess'=>true];
             $client = new EDO_FL_Client();
             $response = $client->send($abonentIdentifier, $result);
         }catch (\Exception $e){

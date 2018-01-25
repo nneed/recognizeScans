@@ -69,6 +69,10 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
 
         } else {
             $queue->status = array_search($response->data['ErrorType'], \app\models\Queue::$statuses);
+            if (!$queue->status) {
+                $queue->status = Queue::UnknownError;
+                $queue->result = $result;
+            }
         }
         $queue->save();
     }

@@ -175,10 +175,11 @@ class SquaredScan{
         $minLength = min($length);
         $rateWidth = $width/$minLength;
         $rateHeight = $height/$maxLength;
-        $p = new Point($width/2*1.5, $height*0.86);
+        //$p = new Point($width/2*1.5, $height*0.86);
+        $p = new Point(400, 978);
         $this->SmartSelect($p, true);
         imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/color.jpg', 100);
-        return $this->output();
+        //return $this->output();
         return $this->validate;
 
     }
@@ -323,7 +324,7 @@ class SquaredScan{
     /**
      * @return bool
      */
- /*   private function ValidateResult()
+    private function ValidateResult()
     {
         $h = imagesy($this->croped);
         $w = imagesx($this->croped);
@@ -342,14 +343,14 @@ class SquaredScan{
         }
         return ($black * 100 / $px_count) > 2;
 
-    }*/
+    }
     public function isRed(Point $p){
         if( imagecolorat($this->croped, $p->x, $p->y) != 16711680){
             return true;
         }
     }
 
-    public function ValidateResult() {
+  /*  public function ValidateResult() {
         $width = imagesx($this->croped);
         $height = imagesy($this->croped);
         $result = true;
@@ -372,7 +373,7 @@ class SquaredScan{
         }
        // if($is_full) $this->log('FULL COLORED');
         return $result;
-    }
+    }*/
 
     public function Rotate() {
 
