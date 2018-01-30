@@ -38,7 +38,7 @@ class EDO_FL_Client
             ->setData([
                 'AbonentIdentifier' => $abonentIdentifier,
                 'IsDocumentsAccepted' => $result,
-                'RejectReason' => "",
+                'RejectReason' => "not signed",
             ])
             ->send();
         if (!$res->isOk) throw new \yii\web\HttpException(404, $res->content );
