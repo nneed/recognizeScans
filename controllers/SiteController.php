@@ -13,6 +13,7 @@ use app\models\ContactForm;
 use app\models\Queue;
 use app\models\QueueSearch;
 use app\models\scan_service\SquaredScan;
+use app\models\scan_service\COCREngine;
 
 class SiteController extends Controller
 {
@@ -171,5 +172,26 @@ class SiteController extends Controller
     public function actionAbout()
     {
         return $this->render('about');
+    }
+
+    public function actionPassportScan()
+    {
+        $token = uniqid();
+        $path = Yii::getAlias('@runtime/scans/passport.jpg');
+        $scan = file_get_contents($path);
+        $needles = ['григорьев','иван','никитич'];
+        $threshold_shift = 100;
+
+        $ocr = new COCREngine(COCREngine::TYPE_PASSPORT,$token,$scan, $needles, $threshold_shift);
+
+        $res = $ocr->recognize();
+
+/*        где
+$type = COCREngine::TYPE_PASSPORT;
+$token = uniqid();
+$needles = ['калабин','александр','геннадьевич'];
+$scan = file_get_contents('passport.jpg');
+$threshold_shift = 100; - нужно играться
+$execution_type = COCREngine::RELEASE; - но он такой вроде по дефолту*/
     }
 }
