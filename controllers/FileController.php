@@ -12,12 +12,13 @@ use yii\rest\ActiveController;
 use app\queue\ScanDocJob;
 use app\queue\EDO_FL_Client;
 use yii\web\UnauthorizedHttpException;
+use app\models\scan_service\COCREngine;
 
 class FileController extends ActiveController
 {
     public $modelClass = 'app\models\Queue';
 
-    public function beforeAction($action)
+/*    public function beforeAction($action)
     {
         $authData = Yii::$app->request->getHeaders()['Authorization'];
         if (!$authData) throw new UnauthorizedHttpException('Требуется авторизация');
@@ -28,7 +29,7 @@ class FileController extends ActiveController
         if (!$user->validatePassword($password))
             throw new UnauthorizedHttpException();
         return parent::beforeAction($action);
-    }
+    }*/
 
     public function actions()
     {
@@ -44,14 +45,14 @@ class FileController extends ActiveController
         $data['documents_with_sign'] = Yii::$app->request->post('documents_with_sign');
         $data['passport'] = $passport['image'];
         unset($passport['image']);
-       //var_dump($data);die();
+      // var_dump($passport);die();
 
         $queue = new Queue();
         $queue->abonentIdentifier = $abonentIdentifier;
         $queue->type = Queue::COPY_CERT;
         $queue->user_id = 1;
         $queue->status = Queue::PENDING;
-        $queue->abonent_data = json_encode($data['passport']);
+        $queue->abonent_data = json_encode($passport);
 
         $transaction = Yii::$app->db->beginTransaction();
 
@@ -97,38 +98,67 @@ class FileController extends ActiveController
         foreach ($files as $file) {
             if ($file->signed === null){
                 try {
-                    $squaredScan = new SquaredScan($file->data);
-                    $file->signed = $squaredScan->test();
+                    /////////////////////
+                    if($file->type = File::SCAN_PASSPORT) {
+
+                       $token = uniqid();
+                       $scan = file_get_contents($file->data);
+                       $abonent_data = (array)json_decode($queue->abonent_data);
+                       $needles = $abonent_data;
+                       $threshold_shift = 50;
+
+                       $ocr = new COCREngine(COCREngine::TYPE_PASSPORT, $token, $scan, $needles, $threshold_shift, COCREngine::DEBUG);
+
+                       $res = $ocr->recognize();
+                       $res = (boolean)$res['check'];
+                       if (!$res) $resultFalse++;
+                    }else{
+                        //$squaredScan = new SquaredScan($file->data);
+                        //$res = $squaredScan->test();
+                        $res = true;
+                    }
+                    /////////////////////
+                    $file->signed = $res;
                     if (!$file->signed) $resultFalse++;
-                } catch (\Exception $e) {
+                }catch (Exception $e) {
                     $file->signed = false;
                     $file->save();
                     $queue->status = Queue::UnknownError;
                     $queue->result = false;
                     $resultFalse++;
                     $queue->save();
+                    yii::error($e);
                 }
                 $file->save();
             }
         }
+
+
         $result = !((boolean)$resultFalse);
         try{
+            $response = new \stdClass();
+            $response->data = ['IsSuccess'=>true];
             $client = new EDO_FL_Client();
-            $response = $client->send($abonentIdentifier, $result);
-        }catch (\Exception $e){
+            $response = $client->send($this->abonentIdentifier, $result);
+        }catch (Exception $e){
             $queue->status = Queue::UnknownError;
             $queue->result = $result;
             $queue->save();
-            throw new \yii\web\HttpException(404, $e->getMessage());
+            throw $e;
         }
 
         if ($response->data['IsSuccess'] == true) {
+
             //  if(true){
             $queue->status = Queue::FINISHED;
             $queue->result = $result;
 
         } else {
             $queue->status = array_search($response->data['ErrorType'], \app\models\Queue::$statuses);
+            if (!$queue->status) {
+                $queue->status = Queue::UnknownError;
+                $queue->result = $result;
+            }
         }
         $queue->save();
     }

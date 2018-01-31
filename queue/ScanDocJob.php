@@ -33,8 +33,26 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
         foreach ($files as $file) {
             if ($file->signed === null){
                 try {
-                    $squaredScan = new SquaredScan($file->data);
-                    $file->signed = $squaredScan->test();
+
+                    if($file->type = File::SCAN_PASSPORT) {
+
+                        $token = uniqid();
+                        $scan = file_get_contents($file->data);
+                        $abonent_data = (array)json_decode($queue->abonent_data);
+                        $needles = $abonent_data;
+                        $threshold_shift = 50;
+
+                        $ocr = new COCREngine(COCREngine::TYPE_PASSPORT, $token, $scan, $needles, $threshold_shift, COCREngine::DEBUG);
+
+                        $res = $ocr->recognize();
+                        $res = (boolean)$res['check'];
+                        if (!$res) $resultFalse++;
+                    }else{
+                        $squaredScan = new SquaredScan($file->data);
+                        $res = $squaredScan->test();
+                     }
+
+                    $file->signed = $res;
                     if (!$file->signed) $resultFalse++;
                 }catch (Exception $e) {
                     $file->signed = false;
