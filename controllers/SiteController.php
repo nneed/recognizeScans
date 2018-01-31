@@ -180,11 +180,14 @@ class SiteController extends Controller
         $path = Yii::getAlias('@runtime/scans/passport.jpg');
         $scan = file_get_contents($path);
         $needles = ['григорьев','иван','никитич'];
-        $threshold_shift = 100;
+        $threshold_shift = 50;
 
-        $ocr = new COCREngine(COCREngine::TYPE_PASSPORT,$token,$scan, $needles, $threshold_shift);
+        $ocr = new COCREngine(COCREngine::TYPE_PASSPORT,$token,$scan, $needles, $threshold_shift, COCREngine::DEBUG);
 
         $res = $ocr->recognize();
+        echo "<pre>";
+        var_dump($res);
+        echo "</pre>";
 
 /*        где
 $type = COCREngine::TYPE_PASSPORT;

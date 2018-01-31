@@ -195,7 +195,7 @@ class COCREngine {
         }
         if($this->execution_type == self::RELEASE) $this->deleteTempFiles();
         $execution_time =  "Execution time: ".(time()-$this->start_time)." sec.";
-        echo "$execution_time\n";
+        //echo "$execution_time\n";
 
         return $res ?
             ['check' => true,  'res' => $res, 'recognized_data' => $recognized_data, 'execution_time' => $execution_time]:

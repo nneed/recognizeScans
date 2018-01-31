@@ -11,9 +11,14 @@ use Yii;
  * @property string $data
  * @property integer $queue_id
  * @property boolean $signed
+ * @property integer $type
  */
 class File extends \yii\db\ActiveRecord
 {
+
+    const SCAN_WITH_SIGN = 0;
+    const SCAN_PASSPORT = 1;
+
     /**
      * @inheritdoc
      */
@@ -28,7 +33,7 @@ class File extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['data', 'queue_id'], 'required'],
+            [['data', 'queue_id','type'], 'required'],
             [['data'], 'string'],
             [['queue_id'], 'integer'],
             [['signed'], 'boolean'],
@@ -45,6 +50,7 @@ class File extends \yii\db\ActiveRecord
             'data' => 'Data',
             'queue_id' => 'Queue ID',
             'signed' => 'Result Signed',
+            'type' => 'Type file',
         ];
     }
 

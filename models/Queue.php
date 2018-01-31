@@ -17,6 +17,7 @@ use Yii;
  * @property integer $type
  * @property integer $status
  * @property boolean $result
+ * @property boolean $abonent_data
  */
 
 class Queue extends ActiveRecord
@@ -116,5 +117,40 @@ class Queue extends ActiveRecord
     public static function find()
     {
         return new QueueQuery(get_called_class());
+    }
+
+    public function SaveScans($data)
+    {
+        foreach ($data['documents_with_sign'] as $string){
+            $this->SaveDoc($string);
+        }
+        $this->SaveDoc($data['passport'], File::SCAN_PASSPORT);
+
+    }
+
+    public function SaveDoc($string, $type = File::SCAN_WITH_SIGN)
+    {
+        $path = Yii::getAlias('@runtime/scans');
+        $alias = $type?'passport':'';
+
+        if (!file_exists($path)) mkdir($path, 0777);
+
+            $filename = $this->id . '_' . uniqid() . $alias . '.jpg';
+
+            $fp = fopen($path . '/' . $filename, "wb");
+            if (!fwrite($fp, base64_decode(trim($string)))) {
+                throw new \yii\web\BadRequestHttpException('Невозможно создать файл на сервере.', 400);
+            }
+            fclose($fp);
+
+            $file = new File();
+            $file->data = $path . '/' . $filename;
+            $file->queue_id = $this->id;
+            $file->type = $type;
+
+            if (!$file->save()) {
+                throw new \Exception(json_encode($file->errors));
+            }
+
     }
 }

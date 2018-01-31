@@ -39,45 +39,36 @@ class FileController extends ActiveController
 
     public function actionCreate()
     {
-        $data = Yii::$app->request->post('data');
         $abonentIdentifier = Yii::$app->request->post('abonentIdentifier');
+        $passport = Yii::$app->request->post('passport');
+        $data['documents_with_sign'] = Yii::$app->request->post('documents_with_sign');
+        $data['passport'] = $passport['image'];
+        unset($passport['image']);
+       //var_dump($data);die();
+
         $queue = new Queue();
         $queue->abonentIdentifier = $abonentIdentifier;
         $queue->type = Queue::COPY_CERT;
         $queue->user_id = 1;
         $queue->status = Queue::PENDING;
+        $queue->abonent_data = json_encode($data['passport']);
+
         $transaction = Yii::$app->db->beginTransaction();
+
         if ($queue->save()){
-
-            foreach ($data as $string) {
-
-                $path = Yii::getAlias('@runtime/scans');
-                if (!file_exists($path)) mkdir($path, 0777);
-
-                $filename = $queue->id .'_'. uniqid() . '.jpg';
-
-                $fp = fopen( $path.'/'.$filename, "wb" );
-                 if (!fwrite($fp, base64_decode(trim($string)))){
-                     $transaction->rollBack();
-                     throw new \yii\web\BadRequestHttpException('Невозможно создать файл на сервере.',400);
-                 }
-
-                fclose($fp);
-
-                $file = new File();
-                $file->data = $path.'/'.$filename;
-                $file->queue_id = $queue->id;
-
-                if (!$file->save()) {
-                    $transaction->rollBack();
-                    throw new \Exception(json_encode($file->errors));
-                }
-
+            try{
+                $result = $queue->SaveScans($data);
+            }catch(Exception $e){
+                throw new Exception(json_encode($e->getMessage()));
             }
-            $id_event = Yii::$app->queue->push(new ScanDocJob([
+
+/*            $id_event = Yii::$app->queue->push(new ScanDocJob([
                 'idQueue' => $queue->id,
                 'abonentIdentifier' => $abonentIdentifier
-            ]));
+            ]));*/
+
+            $id_event = 1;
+
 
         }else{
             $transaction->rollBack();
@@ -88,7 +79,6 @@ class FileController extends ActiveController
         return $queue->id;
 
     }
-
 
     public function actionTest()
     {
