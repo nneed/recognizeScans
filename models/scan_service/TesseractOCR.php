@@ -205,7 +205,7 @@ class TesseractOCR
      */
     protected function buildTesseractCommand()
     {
-        $command = "tesseract \"{$this->image}\"";
+        $command = "/usr/local/bin/tesseract \"{$this->image}\"";
 
         if ($this->language) {
             $command.= " -l {$this->language}";
