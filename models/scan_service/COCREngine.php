@@ -8,7 +8,7 @@
 
 namespace app\models\scan_service;
 use \Imagick;
-use TesseractOCR;
+use app\models\scan_service\TesseractOCR;
 
 class COCREngine {
 

@@ -12,6 +12,8 @@ use app\models\Queue;
 use app\models\scan_service\SquaredScan;
 use yii;
 use \Exception;
+use \app\models\File;
+use app\models\scan_service\COCREngine;
 
 class ScanDocJob extends BaseObject implements \yii\queue\Job
 {

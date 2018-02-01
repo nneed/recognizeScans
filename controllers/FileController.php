@@ -19,7 +19,7 @@ class FileController extends ActiveController
 {
     public $modelClass = 'app\models\Queue';
 
-/*    public function beforeAction($action)
+    public function beforeAction($action)
     {
         $authData = Yii::$app->request->getHeaders()['Authorization'];
         if (!$authData) throw new UnauthorizedHttpException('Требуется авторизация');
@@ -30,7 +30,7 @@ class FileController extends ActiveController
         if (!$user->validatePassword($password))
             throw new UnauthorizedHttpException();
         return parent::beforeAction($action);
-    }*/
+    }
 
     public function actions()
     {
@@ -64,12 +64,10 @@ class FileController extends ActiveController
                 throw new Exception(json_encode($e->getMessage()));
             }
 
-/*            $id_event = Yii::$app->queue->push(new ScanDocJob([
+            $id_event = Yii::$app->queue->push(new ScanDocJob([
                 'idQueue' => $queue->id,
-                'abonentIdentifier' => $abonentIdentifier
-            ]));*/
-
-            $id_event = 1;
+                'abonentIdentifier' => $queueStorage->abonentIdentifier
+            ]));
 
 
         }else{
