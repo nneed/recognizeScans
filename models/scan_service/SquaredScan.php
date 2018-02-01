@@ -138,6 +138,8 @@ class SquaredScan{
             $step++;
         }
 
+        if (count($this->corners[0]) < 3) throw new \yii\web\BadRequestHttpException('Невозможно распознать изображение по шаблону.', 400);
+
         imageline($this->im, $this->corners[0]->x, $this->corners[0]->y, $this->corners[1]->x, $this->corners[1]->y, $green);
         imageline($this->im, $this->corners[1]->x, $this->corners[1]->y, $this->corners[2]->x, $this->corners[2]->y, $green);
         imageline($this->im, $this->corners[0]->x, $this->corners[0]->y, $this->corners[2]->x, $this->corners[2]->y, $green);

@@ -22,8 +22,10 @@ class QueueStorage
     public function __construct($data)
     {
         $this->abonentIdentifier = $data['abonentIdentifier'];
-        $this->passport = $data['passport'];
+        $this->passport = isset($data['passport'])?$data['passport']:null;
+        //todo Добавить проверки
         $this->documents_with_sign = $data['documents_with_sign'];
+        //todo сделать возможность сохранения других документов
     }
 
     public function validateData()
@@ -76,6 +78,7 @@ class QueueStorage
         $file->type = $type;
 
         if (!$file->save()) {
+            //todo Сделать удаление файла
             throw new \Exception(json_encode($file->errors));
         }
 

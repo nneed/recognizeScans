@@ -96,6 +96,8 @@ class FileController extends ActiveController
 
         $files = $queue->files;
         $resultFalse = 0;
+        $rejectMessage = '';
+
         foreach ($files as $file) {
             if ($file->signed === null){
                 try {
@@ -111,13 +113,19 @@ class FileController extends ActiveController
 
                        $res = $ocr->recognize();
                        $res = (boolean)$res['check'];
-                       if (!$res) $resultFalse++;
+                       if (!$res) {
+                           $resultFalse++;
+                           $rejectMessage = File::SCAN_PASSPORT_WRONG;
+                       }
                     }else{
                         $squaredScan = new SquaredScan($file->data);
                         $res = $squaredScan->test();
                     }
                     $file->signed = $res;
-                    if (!$file->signed) $resultFalse++;
+                    if (!$file->signed) {
+                        $resultFalse++;
+                        $rejectMessage = File::SCAN_WITH_SIGN_WRONG;
+                    }
                 }catch (Exception $e) {
                     $file->signed = false;
                     $file->save();
@@ -137,7 +145,7 @@ class FileController extends ActiveController
             $response = new \stdClass();
             $response->data = ['IsSuccess'=>true];
             $client = new EDO_FL_Client();
-            $response = $client->send($queue->abonentIdentifier, $result);
+            $response = $client->send($queue->abonentIdentifier, $result, $rejectMessage);
         }catch (Exception $e){
             $queue->status = Queue::UnknownError;
             $queue->result = $result;

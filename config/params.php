@@ -6,5 +6,6 @@ return [
         'baseUrl' => 'http://dev-1601/IDE.Web/',
         'Authorization'=>'Basic checker:1',
         'url'=>'/api/Abonent/SetAbonentVerificationStatus',
-    ]
+    ],
+    'TMP_DIR' => '/tmp',
 ];

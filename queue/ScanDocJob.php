@@ -30,6 +30,7 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
 
         $files = $queue->files;
         $resultFalse = 0;
+        $rejectMessage = '';
         foreach ($files as $file) {
             if ($file->signed === null){
                 try {
@@ -45,13 +46,19 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
 
                         $res = $ocr->recognize();
                         $res = (boolean)$res['check'];
-                        if (!$res) $resultFalse++;
+                        if(!$res){
+                            $resultFalse++;
+                            $rejectMessage = File::SCAN_PASSPORT_WRONG;
+                        }
                     }else{
                         $squaredScan = new SquaredScan($file->data);
                         $res = $squaredScan->test();
                     }
                     $file->signed = $res;
-                    if (!$file->signed) $resultFalse++;
+                    if (!$file->signed){
+                        $resultFalse++;
+                        $rejectMessage = File::SCAN_WITH_SIGN_WRONG;
+                    }
                 }catch (Exception $e) {
                     $file->signed = false;
                     $file->save();
@@ -69,7 +76,7 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
             $response = new \stdClass();
             $response->data = ['IsSuccess'=>true];
             $client = new EDO_FL_Client();
-            $response = $client->send($this->abonentIdentifier, $result);
+            $response = $client->send($this->abonentIdentifier, $result, $rejectMessage);
         }catch (Exception $e){
             $queue->status = Queue::UnknownError;
             $queue->result = $result;

@@ -20,6 +20,9 @@
  * @license  http://opensource.org/licenses/MIT MIT
  * @link     https://github.com/thiagoalessio/tesseract-ocr-for-php
  */
+
+namespace app\models\scan_service;
+
 class TesseractOCR
 {
     /**

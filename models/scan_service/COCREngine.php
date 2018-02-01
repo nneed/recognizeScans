@@ -16,7 +16,7 @@ class COCREngine {
     const RELEASE = 2;
 
     const RESIZE_WIDTH = 2000;
-    const TMP_DIR = '/usr/local/www/apache24/data/test-site/yii2/runtime/scans/temp/';
+   // const TMP_DIR = '/usr/local/www/apache24/data/test-site/yii2/runtime/scans/temp/';
 
     const TYPE_PASSPORT = 1;
     const TYPE_SNILS = 2;
@@ -102,7 +102,7 @@ class COCREngine {
      */
     private function init($white_list = null, $psm = 3) {
         $this->api->setLanguage('rus');
-        $this->api->setTempDir(self::TMP_DIR);
+        $this->api->setTempDir(\Yii::$app->params['TMP_DIR']);
         $this->api->setPsm($psm);
         if($white_list)
             $this->api->setWhitelist($white_list);
@@ -121,7 +121,7 @@ class COCREngine {
         $this->img->whiteThresholdImage("rgb({$w_threshold},{$w_threshold},{$w_threshold})");
         //$this->img->blackThresholdImage("rgb({$b_threshold},{$b_threshold},{$b_threshold})");
 
-        $dir = self::TMP_DIR;
+        $dir = \Yii::$app->params['TMP_DIR'];
 
         $file_name = "{$dir}/{$this->token}_{$this->type}_0.jpg";
         $this->img->writeImage($file_name);
@@ -146,7 +146,7 @@ class COCREngine {
     }
 
     private function deleteTempFiles() {
-        $dir = self::TMP_DIR;
+        $dir = \Yii::$app->params['TMP_DIR'];
         unlink("{$dir}/{$this->token}_{$this->type}_0.jpg");
         unlink("{$dir}/{$this->token}_{$this->type}_90.jpg");
         unlink("{$dir}/{$this->token}_{$this->type}_180.jpg");

@@ -24,7 +24,7 @@ class EDO_FL_Client
         $this->client = new Client(['baseUrl' => $this->config['baseUrl']]);
     }
 
-    public function send($abonentIdentifier, $result)
+    public function send($abonentIdentifier, $result, $rejectMessage = '')
     {
         $res = $this->client->createRequest()
             ->setMethod('post')
@@ -38,7 +38,7 @@ class EDO_FL_Client
             ->setData([
                 'AbonentIdentifier' => $abonentIdentifier,
                 'IsDocumentsAccepted' => $result,
-                'RejectReason' => "not signed",
+                'RejectReason' => $rejectMessage,
             ])
             ->send();
         if (!$res->isOk) throw new \yii\web\HttpException(404, $res->content );
