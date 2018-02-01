@@ -13,6 +13,7 @@ use app\queue\ScanDocJob;
 use app\queue\EDO_FL_Client;
 use yii\web\UnauthorizedHttpException;
 use app\models\scan_service\COCREngine;
+use app\queue\QueueStorage;
 
 class FileController extends ActiveController
 {
@@ -40,34 +41,25 @@ class FileController extends ActiveController
 
     public function actionCreate()
     {
-        $abonentIdentifier = Yii::$app->request->post('abonentIdentifier');
-        $passport = Yii::$app->request->post('passport');
-        $data['passport'] = isset($passport['image'])?$passport['image']:null;
-        $data['documents_with_sign'] = Yii::$app->request->post('documents_with_sign');
-        if (!$abonentIdentifier){
-            throw new yii\web\UnsupportedMediaTypeHttpException("Неверный формат параметра 'abonentIdentifier'");
-        }
-        if (!$data['documents_with_sign']){
-            throw new yii\web\UnsupportedMediaTypeHttpException("Неверный формат параметра 'documents_with_sign'");
-        }
-        if (!$passport || !isset($passport['image']) || !$passport['first_name'] || !$passport['last_name'] || !$passport['midle_name'] || !$passport['issued_by']){
-            throw new yii\web\UnsupportedMediaTypeHttpException("Неверный формат параметра 'passport'");
-        }
-        unset($passport['image']);
-     //   var_dump($data);die();
+
+        $edofl = Yii::$app->request->post('edofl');
+        $queueStorage = new QueueStorage($edofl);
+
+        $queueStorage->validateData();
 
         $queue = new Queue();
-        $queue->abonentIdentifier = $abonentIdentifier;
+        $queue->abonentIdentifier = $queueStorage->abonentIdentifier;
         $queue->type = Queue::COPY_CERT;
         $queue->user_id = 1;
         $queue->status = Queue::PENDING;
-        $queue->abonent_data = json_encode($passport);
+        $queue->abonent_data = json_encode($queueStorage->passport);
 
         $transaction = Yii::$app->db->beginTransaction();
 
         if ($queue->save()){
             try{
-                $queue->SaveScans($data);
+                $queueStorage->id = $queue->id;
+                $queueStorage->save();
             }catch(Exception $e){
                 throw new Exception(json_encode($e->getMessage()));
             }
