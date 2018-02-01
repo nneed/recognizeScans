@@ -33,8 +33,7 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
         foreach ($files as $file) {
             if ($file->signed === null){
                 try {
-
-                    if($file->type = File::SCAN_PASSPORT) {
+                    if($file->type == File::SCAN_PASSPORT) {
 
                         $token = uniqid();
                         $scan = file_get_contents($file->data);
@@ -50,8 +49,7 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
                     }else{
                         $squaredScan = new SquaredScan($file->data);
                         $res = $squaredScan->test();
-                     }
-
+                    }
                     $file->signed = $res;
                     if (!$file->signed) $resultFalse++;
                 }catch (Exception $e) {

@@ -84,7 +84,7 @@ class SiteController extends Controller
     {
         $id = Yii::$app->request->get('id');
         $zip = new \ZipArchive();
-        $filename = Yii::getAlias('@webroot/upload') . "/files.zip";
+        $filename = Yii::getAlias('@runtime') . "/files.zip";
         if ($zip->open($filename, \ZIPARCHIVE::CREATE)!==TRUE) {
             exit("Невозможно открыть <$filename>\n");
         }

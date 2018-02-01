@@ -42,10 +42,19 @@ class FileController extends ActiveController
     {
         $abonentIdentifier = Yii::$app->request->post('abonentIdentifier');
         $passport = Yii::$app->request->post('passport');
+        $data['passport'] = isset($passport['image'])?$passport['image']:null;
         $data['documents_with_sign'] = Yii::$app->request->post('documents_with_sign');
-        $data['passport'] = $passport['image'];
+        if (!$abonentIdentifier){
+            throw new yii\web\UnsupportedMediaTypeHttpException("Неверный формат параметра 'abonentIdentifier'");
+        }
+        if (!$data['documents_with_sign']){
+            throw new yii\web\UnsupportedMediaTypeHttpException("Неверный формат параметра 'documents_with_sign'");
+        }
+        if (!$passport || !isset($passport['image']) || !$passport['first_name'] || !$passport['last_name'] || !$passport['midle_name'] || !$passport['issued_by']){
+            throw new yii\web\UnsupportedMediaTypeHttpException("Неверный формат параметра 'passport'");
+        }
         unset($passport['image']);
-      // var_dump($passport);die();
+     //   var_dump($data);die();
 
         $queue = new Queue();
         $queue->abonentIdentifier = $abonentIdentifier;
@@ -58,7 +67,7 @@ class FileController extends ActiveController
 
         if ($queue->save()){
             try{
-                $result = $queue->SaveScans($data);
+                $queue->SaveScans($data);
             }catch(Exception $e){
                 throw new Exception(json_encode($e->getMessage()));
             }
@@ -98,8 +107,7 @@ class FileController extends ActiveController
         foreach ($files as $file) {
             if ($file->signed === null){
                 try {
-                    /////////////////////
-                    if($file->type = File::SCAN_PASSPORT) {
+                    if($file->type == File::SCAN_PASSPORT) {
 
                        $token = uniqid();
                        $scan = file_get_contents($file->data);
@@ -113,11 +121,9 @@ class FileController extends ActiveController
                        $res = (boolean)$res['check'];
                        if (!$res) $resultFalse++;
                     }else{
-                        //$squaredScan = new SquaredScan($file->data);
-                        //$res = $squaredScan->test();
-                        $res = true;
+                        $squaredScan = new SquaredScan($file->data);
+                        $res = $squaredScan->test();
                     }
-                    /////////////////////
                     $file->signed = $res;
                     if (!$file->signed) $resultFalse++;
                 }catch (Exception $e) {
@@ -139,7 +145,7 @@ class FileController extends ActiveController
             $response = new \stdClass();
             $response->data = ['IsSuccess'=>true];
             $client = new EDO_FL_Client();
-            $response = $client->send($this->abonentIdentifier, $result);
+            $response = $client->send($queue->abonentIdentifier, $result);
         }catch (Exception $e){
             $queue->status = Queue::UnknownError;
             $queue->result = $result;

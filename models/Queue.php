@@ -124,7 +124,9 @@ class Queue extends ActiveRecord
         foreach ($data['documents_with_sign'] as $string){
             $this->SaveDoc($string);
         }
-        $this->SaveDoc($data['passport'], File::SCAN_PASSPORT);
+        if($data['passport']){
+            $this->SaveDoc($data['passport'], File::SCAN_PASSPORT);
+        }
 
     }
 
