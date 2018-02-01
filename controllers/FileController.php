@@ -27,6 +27,7 @@ class FileController extends ActiveController
         if(count($arr) < 2) throw new UnauthorizedHttpException('Строка авторизации имеет не верный формат');
         list($username,$password) = $arr;
         $user = User::findOne(['username' => $username]);
+        if(!$user) throw new UnauthorizedHttpException('Пользователь с такими данными не найден');
         if (!$user->validatePassword($password))
             throw new UnauthorizedHttpException();
         return parent::beforeAction($action);
