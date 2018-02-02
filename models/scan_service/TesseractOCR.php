@@ -208,6 +208,7 @@ class TesseractOCR
      */
     protected function buildTesseractCommand()
     {
+        //todo Вынести настройку в конфиг
         $command = "/usr/local/bin/tesseract \"{$this->image}\"";
 
         if ($this->language) {

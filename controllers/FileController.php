@@ -19,19 +19,18 @@ class FileController extends ActiveController
 {
     public $modelClass = 'app\models\Queue';
 
-    public function beforeAction($action)
-    {
-        $authData = Yii::$app->request->getHeaders()['Authorization'];
-        if (!$authData) throw new UnauthorizedHttpException('Требуется авторизация');
-        $arr = explode(':',base64_decode(str_replace('Basic' ,'', $authData)));
-        if(count($arr) < 2) throw new UnauthorizedHttpException('Строка авторизации имеет не верный формат');
-        list($username,$password) = $arr;
-        $user = User::findOne(['username' => $username]);
-        if(!$user) throw new UnauthorizedHttpException('Пользователь с такими данными не найден');
-        if (!$user->validatePassword($password))
-            throw new UnauthorizedHttpException();
-        return parent::beforeAction($action);
-    }
+        public function beforeAction($action)
+        {
+            $authData = Yii::$app->request->getHeaders()['Authorization'];
+            if (!$authData) throw new UnauthorizedHttpException('Требуется авторизация');
+            $arr = explode(':',base64_decode(str_replace('Basic' ,'', $authData)));
+            if(count($arr) < 2) throw new UnauthorizedHttpException('Строка авторизации имеет не верный формат');
+            list($username,$password) = $arr;
+            $user = User::findOne(['username' => $username]);
+            if (!$user->validatePassword($password))
+                throw new UnauthorizedHttpException();
+            return parent::beforeAction($action);
+        }
 
     public function actions()
     {
@@ -62,7 +61,7 @@ class FileController extends ActiveController
                 $queueStorage->id = $queue->id;
                 $queueStorage->save();
             }catch(Exception $e){
-                throw new Exception(json_encode($e->getMessage()));
+                throw new Exception($e->getMessage());
             }
 
             $id_event = Yii::$app->queue->push(new ScanDocJob([
@@ -102,20 +101,20 @@ class FileController extends ActiveController
                 try {
                     if($file->type == File::SCAN_PASSPORT) {
 
-                       $token = uniqid();
-                       $scan = file_get_contents($file->data);
-                       $abonent_data = (array)json_decode($queue->abonent_data);
-                       $needles = $abonent_data;
-                       $threshold_shift = 50;
+                        $token = uniqid();
+                        $scan = file_get_contents($file->data);
+                        $abonent_data = (array)json_decode($queue->abonent_data);
+                        $needles = $abonent_data;
+                        $threshold_shift = 50;
 
-                       $ocr = new COCREngine(COCREngine::TYPE_PASSPORT, $token, $scan, $needles, $threshold_shift, COCREngine::DEBUG);
+                        $ocr = new COCREngine(COCREngine::TYPE_PASSPORT, $token, $scan, $needles, $threshold_shift, COCREngine::DEBUG);
 
-                       $res = $ocr->recognize();
-                       $res = (boolean)$res['check'];
-                       if (!$res) {
-                           $resultFalse++;
-                           $rejectMessage = File::SCAN_PASSPORT_WRONG;
-                       }
+                        $res = $ocr->recognize();
+                        $res = (boolean)$res['check'];
+                        if (!$res) {
+                            $resultFalse++;
+                            $rejectMessage = File::SCAN_PASSPORT_WRONG;
+                        }
                     }else{
                         $squaredScan = new SquaredScan($file->data);
                         $res = $squaredScan->test();

@@ -49,7 +49,7 @@ class QueueStorage
     public function save()
     {
         foreach ($this->documents_with_sign as $string){
-            $this->saveFile($string);
+            if ($string) $this->saveFile($string);
         }
         if($this->image){
             $this->saveFile($this->image, File::SCAN_PASSPORT);

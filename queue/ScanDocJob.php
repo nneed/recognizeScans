@@ -48,20 +48,27 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
 
                         $res = $ocr->recognize();
                         $res = (boolean)$res['check'];
+                        var_dump($needles);
+
+                        var_dump($res?'Паспорт расспознан':'Паспорт нерасспознан');
                         if(!$res){
                             $resultFalse++;
-                            $rejectMessage = File::SCAN_PASSPORT_WRONG;
+                            $rejectMessage .= $file->id . File::SCAN_PASSPORT_WRONG . ' ';
                         }
                     }else{
                         $squaredScan = new SquaredScan($file->data);
                         $res = $squaredScan->test();
+                        var_dump('expression'.$res);
+                        if (!(boolean)$res){
+                            $resultFalse++;
+                            $rejectMessage .=  $file->id .File::SCAN_WITH_SIGN_WRONG . ' ';
+                        }
                     }
                     $file->signed = $res;
-                    if (!$file->signed){
-                        $resultFalse++;
-                        $rejectMessage = File::SCAN_WITH_SIGN_WRONG;
-                    }
+
+
                 }catch (Exception $e) {
+                    $rejectMessage .= $file->id .$e->getMessage() . ' ';
                     $file->signed = false;
                     $file->save();
                     $queue->status = Queue::UnknownError;
@@ -74,9 +81,8 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
             }
         }
         $result = !((boolean)$resultFalse);
+        var_dump($rejectMessage);
         try{
-            $response = new \stdClass();
-            $response->data = ['IsSuccess'=>true];
             $client = new EDO_FL_Client();
             $response = $client->send($this->abonentIdentifier, $result, $rejectMessage);
         }catch (Exception $e){
@@ -87,18 +93,18 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
         }
 
         if ($response->data['IsSuccess'] == true) {
-
             //  if(true){
             $queue->status = Queue::FINISHED;
             $queue->result = $result;
 
-        } else {
+        }else{
             $queue->status = array_search($response->data['ErrorType'], \app\models\Queue::$statuses);
             if (!$queue->status) {
                 $queue->status = Queue::UnknownError;
                 $queue->result = $result;
             }
         }
+        var_dump($response->data);
         $queue->save();
     }
 }

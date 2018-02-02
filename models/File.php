@@ -19,8 +19,8 @@ class File extends \yii\db\ActiveRecord
     const SCAN_WITH_SIGN = 0;
     const SCAN_PASSPORT = 1;
 
-    const SCAN_PASSPORT_WRONG = 'Скан паспорта не распознан';
-    const SCAN_WITH_SIGN_WRONG = 'Подпись скана не распознана';
+    const SCAN_PASSPORT_WRONG = 'Скан паспорта не распознан.';
+    const SCAN_WITH_SIGN_WRONG = 'Подпись скана не распознана.';
 
     /**
      * @inheritdoc
