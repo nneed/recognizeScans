@@ -22,6 +22,7 @@
  */
 
 namespace app\models\scan_service;
+use Yii;
 
 class TesseractOCR
 {
@@ -208,8 +209,8 @@ class TesseractOCR
      */
     protected function buildTesseractCommand()
     {
-        //todo Вынести настройку в конфиг
-        $command = "/usr/local/bin/tesseract \"{$this->image}\"";
+        $dir = Yii::$app->params['TesseractDir'];
+        $command = "{$dir} \"{$this->image}\"";
 
         if ($this->language) {
             $command.= " -l {$this->language}";

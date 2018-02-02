@@ -8,4 +8,5 @@ return [
         'url'=>'/api/Abonent/SetAbonentVerificationStatus',
     ],
     'TMP_DIR' => '/tmp',
+    'TesseractDir' => '/usr/local/bin/tesseract',
 ];
