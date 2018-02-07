@@ -50,7 +50,7 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
                         $res = (boolean)$res['check'];
                         var_dump($needles);
 
-                        var_dump($res?'Паспорт расспознан':'Паспорт нерасспознан');
+                        var_dump($res?'Паспорт распознан':'Паспорт нераспознан');
                         if(!$res){
                             $resultFalse++;
                             $rejectMessage .= $file->id . File::SCAN_PASSPORT_WRONG . ' ';

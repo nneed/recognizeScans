@@ -117,7 +117,8 @@ class COCREngine {
         //$this->img->scaleImage(self::RESIZE_WIDTH,0);
         $this->img->setImageColorSpace(Imagick::COLORSPACE_GRAY);
 
-        $this->img->negateImage(true);
+        //$this->img->negateImage(true);
+        $this->img->blurImage(1,1);
         $this->img->whiteThresholdImage("rgb({$w_threshold},{$w_threshold},{$w_threshold})");
         //$this->img->blackThresholdImage("rgb({$b_threshold},{$b_threshold},{$b_threshold})");
 

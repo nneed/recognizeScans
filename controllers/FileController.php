@@ -6,7 +6,6 @@ use yii;
 use app\models\Queue;
 use app\models\File;
 use app\models\scan_service\SquaredScan;
-use app\models\User;
 use yii\base\Exception;
 use yii\rest\ActiveController;
 use app\queue\ScanDocJob;
@@ -14,6 +13,7 @@ use app\queue\EDO_FL_Client;
 use yii\web\UnauthorizedHttpException;
 use app\models\scan_service\COCREngine;
 use app\queue\QueueStorage;
+use app\models\scan_service\ImageMagickCommands;
 
 class FileController extends ActiveController
 {
@@ -100,16 +100,19 @@ class FileController extends ActiveController
             if ($file->signed === null){
                 try {
                     if($file->type == File::SCAN_PASSPORT) {
-
+                        $ImageMagickCommands = new ImageMagickCommands($file->data);
+                        $ImageMagickCommands->prepareScanPassport();
                         $token = uniqid();
-                        $scan = file_get_contents($file->data);
+                        $scan = file_get_contents($ImageMagickCommands->output);
                         $abonent_data = (array)json_decode($queue->abonent_data);
                         $needles = $abonent_data;
-                        $threshold_shift = 50;
+                        $threshold_shift = 30;
 
                         $ocr = new COCREngine(COCREngine::TYPE_PASSPORT, $token, $scan, $needles, $threshold_shift, COCREngine::DEBUG);
+                       // $ImageMagickCommands->removeTempFile();
 
                         $res = $ocr->recognize();
+                       // var_dump($res);die();
                         $res = (boolean)$res['check'];
                         if (!$res) {
                             $resultFalse++;
@@ -125,6 +128,7 @@ class FileController extends ActiveController
                         $rejectMessage = File::SCAN_WITH_SIGN_WRONG;
                     }
                 }catch (Exception $e) {
+                    if($e->statusCode == 500) throw $e;
                     $file->signed = false;
                     $file->save();
                     $queue->status = Queue::UnknownError;

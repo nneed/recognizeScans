@@ -19,7 +19,7 @@ RewriteCond %{REQUEST_URI} .*(favicon.ico|css.map)
 php_value date.timezone 'Europe/Moscow'
 #for remoute debug
 php_value xdebug.remote_enable 1
-php_value xdebug.remote_port 9002
+php_value xdebug.remote_port 9003
 php_value xdebug.remote_host '127.0.0.1'
 php_value xdebug.remote_autostart 0
 php_value date.timezone 'Europe/Moscow'
