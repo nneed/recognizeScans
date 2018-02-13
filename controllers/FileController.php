@@ -5,6 +5,7 @@ namespace app\controllers;
 use yii;
 use app\models\Queue;
 use app\models\File;
+use app\models\User;
 use app\models\scan_service\SquaredScan;
 use yii\base\Exception;
 use yii\rest\ActiveController;
@@ -26,8 +27,9 @@ class FileController extends ActiveController
             $arr = explode(':',base64_decode(str_replace('Basic' ,'', $authData)));
             if(count($arr) < 2) throw new UnauthorizedHttpException('Строка авторизации имеет не верный формат');
             list($username,$password) = $arr;
-            $user = User::findOne(['username' => $username]);
-            if (!$user->validatePassword($password))
+            $user = User::findOne(['username' => trim($username)]);
+            if (!$user) throw new UnauthorizedHttpException();
+            if (!$user->validatePassword(trim($password)))
                 throw new UnauthorizedHttpException();
             return parent::beforeAction($action);
         }
