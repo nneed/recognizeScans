@@ -47,6 +47,14 @@ class Queue extends ActiveRecord
         self::InvalidInputParametrs=>'Входные параметры ошибочны',
     ];
 
+      public static $errorsForEdoFl = [
+        self::UnknownError => 'UnknownError',
+        self::UserPermissionError  => 'UserPermissionError',
+        self::UnsupportedOperationError  => 'UnsupportedOperationError',
+        self::InvalidAbonentStateError  => 'InvalidAbonentStateError',
+        self::InvalidInputParametrs => 'InvalidInputParametrs',
+    ];
+
     /**
      * type
      */

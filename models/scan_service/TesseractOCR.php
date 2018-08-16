@@ -90,7 +90,7 @@ class TesseractOCR
         $this->generateConfigFile();
         $this->execute();
         $recognizedText = $this->readOutputFile();
-        $this->removeTempFiles();
+     //   $this->removeTempFiles();
         return $recognizedText;
     }
 
@@ -209,7 +209,9 @@ class TesseractOCR
      */
     protected function buildTesseractCommand()
     {
-        $dir = Yii::$app->params['TesseractDir'];
+        //todo Вынести настройку в конфиг
+        $command = "/bin/tesseract \"{$this->image}\"";
+$dir = Yii::$app->params['TesseractDir'];
         $command = "{$dir} \"{$this->image}\"";
 
         if ($this->language) {

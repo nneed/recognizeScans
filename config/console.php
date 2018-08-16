@@ -9,27 +9,27 @@ $config = [
     'bootstrap' => ['log', 'queue'],
     'controllerNamespace' => 'app\commands',
     'components' => [
-        'cache' => [
+/*        'cache' => [
             'class' => 'yii\caching\FileCache',
-        ],
+        ],*/
         'log' => [
             'targets' => [
                 [
                     'class' => 'yii\log\FileTarget',
-                    'levels' => ['error', 'warning', 'info'],
-                    'logVars' => [],
-                    'except' => [
-                        'yii\db*'
-                    ],
+                    'levels' => ['error', 'warning'],
                 ],
             ],
         ],
         'db' => $db,
         'queue' => [
-            'class' => \yii\queue\gearman\Queue::class,
+/*            'class' => \yii\queue\gearman\Queue::class,
             'host' => 'localhost',
             'port' => 4730,
-            'channel' => 'yii2_queue',
+            'channel' => 'yii2_queue',*/
+           'class' => \yii\queue\file\Queue::class,
+            'path' => '@runtime/queue_files',
+            'ttr' => 10 * 60, // Максимальное время выполнения задания 
+            'attempts' => 5, // Максимальное кол-во попыток
         ],
     ],
     'params' => $params,

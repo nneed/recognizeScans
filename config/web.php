@@ -19,9 +19,9 @@ $config = [
                 'application/json' => 'yii\web\JsonParser',
             ]
         ],
-        'cache' => [
+/*        'cache' => [
             'class' => 'yii\caching\FileCache',
-        ],
+        ],*/
         'user' => [
             'identityClass' => 'app\models\User',
             'enableSession' => false,
@@ -47,10 +47,14 @@ $config = [
         ],
         'db' => $db,
         'queue' => [
-            'class' => \yii\queue\gearman\Queue::class,
+/*            'class' => \yii\queue\gearman\Queue::class,
             'host' => 'localhost',
             'port' => 4730,
-            'channel' => 'yii2_queue',
+            'channel' => 'yii2_queue',*/
+            'class' => \yii\queue\file\Queue::class,
+            'path' => '@runtime/queue_files',
+            'ttr' => 10 * 60, // Максимальное время выполнения задания 
+            'attempts' => 5, // Максимальное кол-во попыток
         ],
 
         'urlManager' => [

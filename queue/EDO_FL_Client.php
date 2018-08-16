@@ -41,6 +41,12 @@ class EDO_FL_Client
                 'RejectReason' => $rejectMessage,
             ])
             ->send();
+/*        var_dump('*-*-*-*-*-*-*-*-*Запрос на edo_fl');    
+        var_dump([
+                'AbonentIdentifier' => $abonentIdentifier,
+                'IsDocumentsAccepted' => $result,
+                'RejectReason' => $rejectMessage,
+            ]);*/
         if (!$res->isOk) throw new \yii\web\HttpException(404, $res->content );
         return $res;
     }
