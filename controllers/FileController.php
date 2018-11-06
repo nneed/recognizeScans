@@ -58,24 +58,24 @@ class FileController extends ActiveController
 
         $transaction = Yii::$app->db->beginTransaction();
 
-        if ($queue->save()){
-            try{
+        try{
+            if ($queue->save()){
                 $queueStorage->id = $queue->id;
                 $queueStorage->save();
-            }catch(Exception $e){
-                throw new Exception($e->getMessage());
+
+                $id_event = Yii::$app->queue->push(new ScanDocJob([
+                    'idQueue' => $queue->id,
+                    'abonentIdentifier' => $queueStorage->abonentIdentifier
+                ]));
+            }else{
+                throw new Exception(json_encode($queue->errors));
             }
-
-            $id_event = Yii::$app->queue->push(new ScanDocJob([
-                'idQueue' => $queue->id,
-                'abonentIdentifier' => $queueStorage->abonentIdentifier
-            ]));
-
-
-        }else{
+        }catch(\Exception $e){
+            mail("nukazankov@rus-telecom.ru", "Сервис проверки документов", "Ошибка id: ".$queue->id. ' Ошибка '.$e->getMessage());
             $transaction->rollBack();
-            throw new Exception(json_encode($queue->errors));
+            throw new Exception($e->getMessage());
         }
+
         if ($id_event === null) $transaction->rollBack();
         $transaction->commit();
         return $queue->id;
