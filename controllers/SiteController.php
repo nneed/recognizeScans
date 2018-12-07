@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\File;
+use app\queue\ScanDocJob;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -68,7 +69,7 @@ class SiteController extends Controller
     {
 
         $searchModel = new QueueSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $dataProvider = $searchModel->searchWithFiles(Yii::$app->request->queryParams);
 
         return $this->render('index', [
             'dataProvider' => $dataProvider,
@@ -100,6 +101,64 @@ class SiteController extends Controller
             unlink($filename);
         }
 
+    }
+
+    public function actionDownloadScansAsJson()
+    {
+        $id = Yii::$app->request->get('id');
+        $queue = Queue::find()->where(['id' => $id])->with('files')->one();
+//var_dump(json_decode($queue->abonent_data,true)); die();
+        $edofl = [
+            'edofl' => [
+                'abonentIdentifier' => $queue->abonentIdentifier,
+                'passport' => json_decode($queue->abonent_data, true)
+            ],
+        ];
+        $documents_with_sign = [];
+        foreach ($queue->files as $file){
+            if (!is_file($file->data)) throw new \yii\web\NotFoundHttpException('The file does not exists.');
+            switch ($file->type){
+                case File::SCAN_WITH_SIGN:
+                    $documents_with_sign[] = base64_encode(file_get_contents($file->data));
+                    break;
+                case File::SCAN_PASSPORT:
+                    $edofl['edofl']['passport']['image'] = base64_encode(file_get_contents($file->data));
+            }
+        }
+        $edofl['edofl']['documents_with_sign'] = $documents_with_sign;
+
+        $edofl = json_encode($edofl);
+//var_dump($edofl); die();
+        $filename = Yii::getAlias('@runtime') . $id . '_' . uniqid() . 'files' . '.json';
+
+        $fp = fopen($filename, "wb");
+        if (!fwrite($fp, trim($edofl))) {
+            throw new \yii\web\BadRequestHttpException('Невозможно создать файл на сервере.', 400);
+        }
+        fclose($fp);
+
+
+       // $result = file_put_contents($filename,$edofl);
+        //if(!$result) throw new \yii\web\NotFoundHttpException("Can't write in file");
+        Yii::$app->response->sendFile($filename);
+        if (file_exists($filename)) {
+            unlink($filename);
+        }
+
+
+
+    }
+
+    public function actionRetry()
+    {
+        $id = Yii::$app->request->get('id');
+        $queue = Queue::findOne($id);
+
+        $id_event = Yii::$app->queue->push(new ScanDocJob([
+            'idQueue' => $queue->id,
+            'abonentIdentifier' => $queue->abonentIdentifier
+        ]));
+        if ($id_event === null) throw new \yii\web\BadRequestHttpException('Error retry', 400);
     }
 
     public function actionShowResult()
