@@ -28,7 +28,7 @@ $config = [
             'channel' => 'yii2_queue',*/
            'class' => \yii\queue\file\Queue::class,
             'path' => '@runtime/queue_files',
-            'ttr' => 10 * 60, // Максимальное время выполнения задания 
+            'ttr' => 10 * 60, // Максимальное время выполнения задания
             'attempts' => 5, // Максимальное кол-во попыток
         ],
     ],
