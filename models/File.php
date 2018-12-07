@@ -22,6 +22,11 @@ class File extends \yii\db\ActiveRecord
     const SCAN_PASSPORT_WRONG = 'Скан паспорта не распознан.';
     const SCAN_WITH_SIGN_WRONG = 'Подпись скана не распознана.';
 
+    public static $types = [
+        self::SCAN_WITH_SIGN => 'Скан с подписью',
+        self::SCAN_PASSPORT => 'Скан паспорта'
+    ];
+
     /**
      * @inheritdoc
      */

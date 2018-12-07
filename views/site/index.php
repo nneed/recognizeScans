@@ -44,9 +44,18 @@ $this->title = 'My Yii Application';
             ],
             'creation_time',
             'update_time',
-            'abonentIdentifier',
-            'user_id',
-            //['class' => 'yii\grid\ActionColumn'],
+            [
+                'attribute' => 'abonentIdentifier',
+                'label'=>'Abonent Identifier',
+                'filter' => Html::activeInput('text',$searchModel, 'abonentIdentifier',['text' => 'Please select','class'=>'form-control']),
+            ],
+            [
+                'attribute' => 'filesNotRecognizedAsString',
+                'format' => 'raw',
+                'label'=>'Не расспознано',
+                'filter'=> false
+            ],
+           // ['class' => 'yii\grid\ActionColumn'],
         ],
     ]);
 /*Pjax::end();*/

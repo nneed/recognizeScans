@@ -24,9 +24,6 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
     public function execute($queue)
     {
         $queue = Queue::findOne($this->idQueue);
-/*        if ($queue->status != Queue::PENDING){
-            return;
-        }*/
 
         $queue->status = Queue::PROCESSING;
         if (!$queue->save())  throw new Exception(json_encode($queue->errors));
@@ -37,7 +34,7 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
 
         foreach ($files as $file) {
 
-           if ($file->signed === null){
+//           if ($file->signed === null){
                 try {
                     if($file->type == File::SCAN_PASSPORT) {
 
@@ -48,24 +45,13 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
                         $threshold_shift = 50;
                         $ocr = new COCREngine(COCREngine::TYPE_PASSPORT, $token, $scan, $needles, $threshold_shift, COCREngine::DEBUG);
                         $res = $ocr->recognize();
-                       // file_put_contents('/var/www/html/queue/test.txt', "\n".$queue->id."--->".var_export($res,true).var_export($needles,true), FILE_APPEND);
                         $res = (boolean)$res['check'];
                         if(!$res){
                             $resultFalse++;
                             $rejectMessage .= '#'.$file->id . File::SCAN_PASSPORT_WRONG . ' ';
                         }
                     }else{
-
-/*                        $squaredScan = new SquaredScan($file->data);
-                        $res = $squaredScan->test();
-                        var_dump('expression'.$res);
-                        if (!(boolean)$res){
-                            $resultFalse++;
-                            $rejectMessage .=  $file->id .File::SCAN_WITH_SIGN_WRONG . ' ';
-                        }*/
                         exec("python3.6 /var/www/html/queue/python/recognize.py ".$file->data , $output, $return_var);
-                       // file_put_contents('/var/www/html/queue/test.txt', $queue->id."--->".$return_var, FILE_APPEND);
-                       // var_dump($file->data);
                         if ($return_var === 1) {
                            throw new \Exception("Расспознование подписи завершилось с ошибкой");
                         }
@@ -90,7 +76,7 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
                     yii::error($e);
                 }
                 $file->save();
-            }
+//            }
         }
         $result = !((boolean)$resultFalse);
         try{

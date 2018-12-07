@@ -5,6 +5,7 @@ namespace app\models;
 use yii\behaviors\TimestampBehavior;
 use \yii\db\ActiveRecord;
 use Yii;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "queue".
@@ -116,6 +117,24 @@ class Queue extends ActiveRecord
     public function getFiles()
     {
         return $this->hasMany(File::className(), ['queue_id' => 'id']);
+    }
+
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getFilesNotRecognized()
+    {
+        return $this->hasMany(File::className(), ['queue_id' => 'id'])->andWhere(['signed' => false]);
+    }
+
+    public function getFilesNotRecognizedAsString()
+    {
+        $string = '';
+        foreach ($this->filesNotRecognized as $val){
+            $string .= File::$types[$val->type] . '<br>';
+        }
+        return $string ?? "Все документы расспознаны";
     }
 
     /**
