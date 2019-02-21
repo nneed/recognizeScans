@@ -21,7 +21,7 @@ class SquaredScan{
     private $new_colored;
     private $corners;
     private $validate;
-
+    private $black = 0;
 
 
     /**
@@ -180,14 +180,9 @@ class SquaredScan{
         $minLength = min($length);
         $rateWidth = $width/$minLength;
         $rateHeight = $height/$maxLength;
-        $p = new Point($width/2, $height*0.86);
-       // $p = new Point(430, 975);
+        //$p = new Point($width/2*1.5, $height*0.86);
+        $p = new Point(400, 978);
         $this->SmartSelect($p, true);
-        imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/color.jpg', 100);
-        if($this->validate === null){
-            $p = new Point($p->x-5, $p->y-5);
-            $this->SmartSelect($p, true);
-        }
         imagejpeg($this->im,  \Yii::getAlias('@runtime/scans').'/color.jpg', 100);
         //return $this->output();
         return $this->validate;
@@ -196,6 +191,7 @@ class SquaredScan{
 
     public function SmartSelect($center, $color = null) {
         ini_set('memory_limit', '-1');
+        $this->black = 0;
         $this->Step([$center]);
 
         while (count($this->colored) > 0){

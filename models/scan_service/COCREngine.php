@@ -155,12 +155,16 @@ class COCREngine {
     }
 
     private function recognizeImage($path) {
-        $this->api = new TesseractOCR($path);
-        if($this->type == self::TYPE_PASSPORT || $this->type == self::TYPE_SNILS)
-            $this->init(self::SYMBOLS_WHITE_LIST());
-        else if($this->type == self::TYPE_INN || $this->type == self::TYPE_OGRN)
-            $this->init(array_merge(self::NUMBERS()),9);
-        return $this->api->recognize();
+        try{
+            $this->api = new TesseractOCR($path);
+            if($this->type == self::TYPE_PASSPORT || $this->type == self::TYPE_SNILS)
+                $this->init(self::SYMBOLS_WHITE_LIST());
+            else if($this->type == self::TYPE_INN || $this->type == self::TYPE_OGRN)
+                $this->init(array_merge(self::NUMBERS()),9);
+            return $this->api->recognize();
+        }catch(\Exception $e){
+            throw new Exception("Error Processing Request", 1);
+        }
     }
 
     private function compareWithSourceData($data) {

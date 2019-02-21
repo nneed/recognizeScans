@@ -87,10 +87,15 @@ class TesseractOCR
      */
     public function recognize()
     {
-        $this->generateConfigFile();
-        $this->execute();
-        $recognizedText = $this->readOutputFile();
+        try {
+            $this->generateConfigFile();
+            $this->execute();
+            $recognizedText = $this->readOutputFile();
      //   $this->removeTempFiles();
+        } catch (\Exception $e) {
+            throw new Exception("Error Processing Request", 1);
+        }
+
         return $recognizedText;
     }
 
