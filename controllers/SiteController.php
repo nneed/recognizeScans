@@ -3,7 +3,6 @@
 namespace app\controllers;
 
 use app\models\File;
-use app\queue\ScanDocJob;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -15,6 +14,7 @@ use app\models\Queue;
 use app\models\QueueSearch;
 use app\models\scan_service\SquaredScan;
 use app\models\scan_service\COCREngine;
+use app\queue\ScanDocJob;
 
 class SiteController extends Controller
 {
@@ -103,7 +103,21 @@ class SiteController extends Controller
 
     }
 
-    public function actionDownloadScansAsJson()
+
+    public function actionRetry()
+    {
+        $id = Yii::$app->request->get('id');
+        $queue = Queue::findOne($id);
+
+        $id_event = Yii::$app->queue->push(new ScanDocJob([
+            'idQueue' => $queue->id,
+            'abonentIdentifier' => $queue->abonentIdentifier
+        ]));
+        if ($id_event === null) throw new \yii\web\BadRequestHttpException('Error retry', 400);
+        echo "success";
+    }
+
+   public function actionDownloadScansAsJson()
     {
         $id = Yii::$app->request->get('id');
         $queue = Queue::find()->where(['id' => $id])->with('files')->one();
@@ -145,20 +159,6 @@ class SiteController extends Controller
             unlink($filename);
         }
 
-
-
-    }
-
-    public function actionRetry()
-    {
-        $id = Yii::$app->request->get('id');
-        $queue = Queue::findOne($id);
-
-        $id_event = Yii::$app->queue->push(new ScanDocJob([
-            'idQueue' => $queue->id,
-            'abonentIdentifier' => $queue->abonentIdentifier
-        ]));
-        if ($id_event === null) throw new \yii\web\BadRequestHttpException('Error retry', 400);
     }
 
     public function actionShowResult()
