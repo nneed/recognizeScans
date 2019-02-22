@@ -22,7 +22,7 @@ class QueueSearch extends Queue
         // только поля определенные в rules() будут доступны для поиска
         return [
 /*            [['status','abonentIdentifier'], 'required'],*/
-            [['status','result','abonentIdentifier', 'filesNotRecognizedAsString'], 'safe'],
+            [['status','result','abonentIdentifier', 'filesNotRecognizedAsString','id'], 'safe'],
         ];
     }
 
@@ -89,8 +89,8 @@ class QueueSearch extends Queue
         ->andFilterWhere(['status' => $this->status])
         ->andFilterWhere(['result' => $this->result]);
 
-/*        $query->andFilterWhere(['id' => $this->id]);
-            ->andFilterWhere(['like', 'creation_date', $this->creation_date]);*/
+        $query->andFilterWhere(['queue.id' => $this->id]);
+       /*     ->andFilterWhere(['like', 'creation_date', $this->creation_date]);*/
 
         return $dataProvider;
     }
