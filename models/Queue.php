@@ -132,7 +132,11 @@ class Queue extends ActiveRecord
     {
         $string = '';
         foreach ($this->filesNotRecognized as $val){
-            $string .= File::$types[$val->type] . '<br>';
+            if (!$val->type){
+                $string .= 'Не известный тип';
+            }else{
+                $string .= File::$types[$val->type] . '<br>';
+            }
         }
         return $string ?? "Все документы расспознаны";
     }
