@@ -91,7 +91,13 @@ class SiteController extends Controller
 
         $files = \yii\helpers\ArrayHelper::map(Queue::findOne($id)->files, 'id', 'data');
         foreach ($files as $id => $path){
-            if (!is_file($path)) throw new \yii\web\NotFoundHttpException('The file does not exists.');
+            if (!is_file($path)) {
+                $path = str_replace('scans','scans/old',$path);
+                if (!is_file($path)) {
+                     throw new \yii\web\NotFoundHttpException('The file does not exists.');
+                }
+            }
+
             $zip->addFile($path, basename($path));
         }
         $zip->close();
