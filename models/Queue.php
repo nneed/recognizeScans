@@ -131,7 +131,7 @@ class Queue extends ActiveRecord
     public function getFilesNotRecognizedAsString()
     {
         $string = '';
-        foreach ($this->filesNotRecognized as $val){
+        foreach ($this->files as $val){
             if ($val->type === null){
                 $string .= 'Не известный тип <br>';
             }else{

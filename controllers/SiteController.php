@@ -120,7 +120,7 @@ class SiteController extends Controller
     {
         $id = Yii::$app->request->get('id');
         $queue = Queue::find()->where(['id' => $id])->with('files')->one();
-//var_dump(json_decode($queue->abonent_data,true)); die();
+
         $edofl = [
             'edofl' => [
                 'abonentIdentifier' => $queue->abonentIdentifier,
@@ -141,7 +141,7 @@ class SiteController extends Controller
         $edofl['edofl']['documents_with_sign'] = $documents_with_sign;
 
         $edofl = json_encode($edofl);
-//var_dump($edofl); die();
+
         $filename = Yii::getAlias('@runtime') . $id . '_' . uniqid() . 'files' . '.json';
 
         $fp = fopen($filename, "wb");
@@ -150,9 +150,6 @@ class SiteController extends Controller
         }
         fclose($fp);
 
-
-       // $result = file_put_contents($filename,$edofl);
-        //if(!$result) throw new \yii\web\NotFoundHttpException("Can't write in file");
         Yii::$app->response->sendFile($filename);
         if (file_exists($filename)) {
             unlink($filename);

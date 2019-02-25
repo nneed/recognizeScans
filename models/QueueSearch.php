@@ -16,13 +16,12 @@ use app\models\Queue;
 class QueueSearch extends Queue
 {
 
-    public $filesNotRecognizedAsString;
     public function rules()
     {
         // только поля определенные в rules() будут доступны для поиска
         return [
 /*            [['status','abonentIdentifier'], 'required'],*/
-            [['status','result','abonentIdentifier', 'filesNotRecognizedAsString','id'], 'safe'],
+            [['status','result','abonentIdentifier','id'], 'safe'],
         ];
     }
 
@@ -59,24 +58,16 @@ class QueueSearch extends Queue
     public function searchWithFiles($params)
     {
         $query = Queue::find();
-//        $query->select('queue.id,files.queue_id, array_agg(files.signed) as filesNotRecognizedAsString');
-        $query->join('join','files', 'queue.id = files.queue_id');
-        $query->groupBy('queue.id, files.queue_id');
-        $query->with('filesNotRecognized');
+        $query->with('files');
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
-//        $dataProvider->setSort([
-////            'attributes' => [
-//////                'filesNotRecognizedAsString'=>[
-//////                    'asc' => ['files.filesNotRecognizedAsString' => SORT_ASC],
-//////                    'desc' => ['filesNotRecognizedAsString' => SORT_DESC],
-//////                    'label' => 'Не расспознано',
-//////                ],
-////                'filesNotRecognizedAsString',
-//                'id',
-//            ]
-//        ]);
+        $dataProvider->setSort([
+            'attributes' => [
+                'id',
+            ],
+            'defaultOrder' => ['id'=> SORT_DESC]
+        ]);
 
 
         // загружаем данные формы поиска и производим валидацию
@@ -90,7 +81,6 @@ class QueueSearch extends Queue
         ->andFilterWhere(['result' => $this->result]);
 
         $query->andFilterWhere(['queue.id' => $this->id]);
-       /*     ->andFilterWhere(['like', 'creation_date', $this->creation_date]);*/
 
         return $dataProvider;
     }
