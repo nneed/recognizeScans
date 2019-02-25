@@ -66,12 +66,12 @@ class ScanDocJob extends BaseObject implements \yii\queue\Job
                         }
                     }else{
 
-                        exec("python3.6 /var/www/html/queue/python/recognize.py ".$file->data , $output, $return_var);
+                        exec("python3.6 /var/www/html/queue/python/test_recognize.py ".$file->data. ' '.$file->id, $output, $return_var);
 
                         if ($return_var === 1) {
                            throw new \Exception("Расспознование подписи завершилось с ошибкой");
                         }
-                        $res = (boolean)$output[0];
+                        $res = $output[0] === 'True';
                         if (!$res){
                             $resultFalse++;
                             $rejectMessage .=  '#'.$file->id .File::SCAN_WITH_SIGN_WRONG . ' ';

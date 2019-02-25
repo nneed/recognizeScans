@@ -132,8 +132,8 @@ class Queue extends ActiveRecord
     {
         $string = '';
         foreach ($this->filesNotRecognized as $val){
-            if (!$val->type){
-                $string .= 'Не известный тип';
+            if ($val->type === null){
+                $string .= 'Не известный тип <br>';
             }else{
                 $string .= File::$types[$val->type] . '<br>';
             }
