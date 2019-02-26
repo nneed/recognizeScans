@@ -160,7 +160,6 @@ class SiteController extends Controller
         if (file_exists($filename)) {
             unlink($filename);
         }
-        echo 'done!';
 
     }
 
