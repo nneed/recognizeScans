@@ -132,6 +132,7 @@ class Queue extends ActiveRecord
     {
         $string = '';
         foreach ($this->files as $val){
+            if ($val->signed == true) continue;
             if ($val->type === null){
                 $string .= 'Не известный тип <br>';
             }else{
