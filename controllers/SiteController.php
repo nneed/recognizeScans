@@ -69,12 +69,15 @@ class SiteController extends Controller
 
         $searchModel = new QueueSearch();
         $dataProvider = $searchModel->searchWithFiles(Yii::$app->request->queryParams);
+        $infoQueue = Queue::GetInfoQueue();
 
         return $this->render('index', [
             'dataProvider' => $dataProvider,
-            'searchModel' => $searchModel
+            'searchModel' => $searchModel,
+            'infoQueue' => $infoQueue
         ]);
     }
+
 
     /**
      * Download file.
@@ -89,8 +92,10 @@ class SiteController extends Controller
             exit("Невозможно открыть <$filename>\n");
         }
 
-        $files = \yii\helpers\ArrayHelper::map(Queue::findOne($id)->files, 'id', 'data');
-        foreach ($files as $id => $path){
+        $files = (Queue::findOne($id))->files;
+
+        foreach ($files as $file){
+            $path = $file->getUploadedFilePath('data');
             if (!is_file($path)) {
                 $path = str_replace('scans','scans/old',$path);
                 if (!is_file($path)) {
@@ -122,7 +127,7 @@ class SiteController extends Controller
         echo "success";
     }
 
-   public function actionDownloadScansAsJson()
+    public function actionDownloadScansAsJson()
     {
         $id = Yii::$app->request->get('id');
         $queue = Queue::find()->where(['id' => $id])->with('files')->one();

@@ -2,7 +2,7 @@
 
 namespace app\models;
 
-use Yii;
+use yiidreamteam\upload\ImageUploadBehavior;
 
 /**
  * This is the model class for table "files".
@@ -27,6 +27,7 @@ class File extends \yii\db\ActiveRecord
         self::SCAN_PASSPORT => 'Скан паспорта'
     ];
 
+
     /**
      * @inheritdoc
      */
@@ -41,8 +42,8 @@ class File extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['data', 'queue_id','type'], 'required'],
-            [['data'], 'string'],
+            [['queue_id','type'], 'required'],
+//            [['data'], 'string'],
             [['queue_id'], 'integer'],
             [['signed'], 'boolean'],
         ];
@@ -78,4 +79,35 @@ class File extends \yii\db\ActiveRecord
     {
         return new FileQuery(get_called_class());
     }
+
+    public function behaviors(): array
+    {
+        return [
+            [
+                'class' => ImageUploadBehavior::className(),
+                'attribute' => 'data',
+                'createThumbsOnRequest' => true,
+                'createThumbsOnSave' => false,
+                'filePath' => '@app/web/upload/scans/origins/'.date("Y").'/'.date("m").'/'.date("d").'/[[attribute_queue_id]]_[[pk]].jpg',
+                'fileUrl' => '/upload/scans/origins/'.date("Y").'/'.date("m").'/'.date("d").'/[[attribute_queue_id]]_[[pk]].jpg',
+                'thumbPath' => '@app/web/upload/scans/thumbs/'.date("Y").'/'.date("m").'/'.date("d").'/[[attribute_queue_id]]_[[pk]].jpg',
+                'thumbUrl' =>  '/upload/scans/thumbs/'.date("Y").'/'.date("m").'/'.date("d").'/[[attribute_queue_id]]_[[pk]].jpg',
+                'thumbs' => [
+                    'thumb' => ['width' => 160, 'height' => 'auto'],
+                ],
+            ],
+        ];
+    }
+
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)){
+            $this->data = 'empty';
+            return true;
+        }
+        return false;
+    }
+
+
+
 }

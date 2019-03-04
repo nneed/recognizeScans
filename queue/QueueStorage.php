@@ -7,7 +7,6 @@
  */
 
 namespace app\queue;
-use Yii;
 use app\models\File;
 use yii\web\UnsupportedMediaTypeHttpException;
 
@@ -48,39 +47,28 @@ class QueueStorage
 
     public function save()
     {
-        foreach ($this->documents_with_sign as $string){
-            if ($string) $this->saveFile($string);
+        if ($this->documents_with_sign) {
+            $this->saveFile($this->documents_with_sign, File::SCAN_WITH_SIGN);
         }
         if($this->image){
-            $this->saveFile($this->image, File::SCAN_PASSPORT);
+            $this->saveFile([$this->image], File::SCAN_PASSPORT);
         }
 
     }
 
-    private function saveFile($string, $type = File::SCAN_WITH_SIGN)
+    private function saveFile($array, $type)
     {
-        $path = Yii::getAlias('@runtime/scans');
-        $alias = $type?'passport':'';
-
-        if (!file_exists($path)) mkdir($path, 0777);
-
-        $filename = $this->id . '_' . uniqid() . $alias . '.jpg';
-
-        $fp = fopen($path . '/' . $filename, "wb");
-        if (!fwrite($fp, base64_decode(trim($string)))) {
-            throw new \yii\web\BadRequestHttpException('Невозможно создать файл на сервере.', 400);
+        $files = UploadedFileFromJson::getInstancesFromJson($array, $this->id);
+        foreach ($files as $oneFile){
+            $file = new File();
+            $file->queue_id = $this->id;
+            $file->type = $type;
+            $file->data = $oneFile;
+            if (!$file->save()) {
+                throw new \Exception(json_encode($file->errors));
+            }
         }
-        fclose($fp);
 
-        $file = new File();
-        $file->data = $path . '/' . $filename;
-        $file->queue_id = $this->id;
-        $file->type = $type;
-
-        if (!$file->save()) {
-            //todo Сделать удаление файла
-            throw new \Exception(json_encode($file->errors));
-        }
 
     }
 }

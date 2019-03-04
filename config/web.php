@@ -6,7 +6,11 @@ $db = require __DIR__ . '/db.php';
 $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
-    'bootstrap' => ['log', 'queue'], // Компонент регистрирует свои консольные команды
+    'bootstrap' => ['log',
+        'queue',
+        'queueThumbs',
+        'app\bootstrap\SetUp'
+    ],
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
@@ -47,13 +51,15 @@ $config = [
         ],
         'db' => $db,
         'queue' => [
-/*            'class' => \yii\queue\gearman\Queue::class,
-            'host' => 'localhost',
-            'port' => 4730,
-            'channel' => 'yii2_queue',*/
             'class' => \yii\queue\file\Queue::class,
             'path' => '@runtime/queue_files',
             'ttr' => 10 * 60, // Максимальное время выполнения задания 
+            'attempts' => 5, // Максимальное кол-во попыток
+        ],
+        'queueThumbs' => [
+            'class' => \yii\queue\file\Queue::class,
+            'path' => '@runtime/queueThumbs',
+            'ttr' => 10 * 60, // Максимальное время выполнения задания
             'attempts' => 5, // Максимальное кол-во попыток
         ],
 
