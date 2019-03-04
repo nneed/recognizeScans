@@ -9,4 +9,5 @@ return [
     ],
     'TMP_DIR' => '/tmp',
     'TesseractDir' => '/bin/tesseract',
+    'ScansTemp' => 'scans/temp' // Относительно папки runtime
 ];

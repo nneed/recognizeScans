@@ -151,40 +151,10 @@ class Queue extends ActiveRecord
         return new QueueQuery(get_called_class());
     }
 
-    public function SaveScans($data)
+    public static function GetInfoQueue()
     {
-        foreach ($data['documents_with_sign'] as $string){
-            $this->SaveDoc($string);
-        }
-        if($data['passport']){
-            $this->SaveDoc($data['passport'], File::SCAN_PASSPORT);
-        }
-
-    }
-
-    public function SaveDoc($string, $type = File::SCAN_WITH_SIGN)
-    {
-        $path = Yii::getAlias('@runtime/scans');
-        $alias = $type?'passport':'';
-
-        if (!file_exists($path)) mkdir($path, 0777);
-
-            $filename = $this->id . '_' . uniqid() . $alias . '.jpg';
-
-            $fp = fopen($path . '/' . $filename, "wb");
-            if (!fwrite($fp, base64_decode(trim($string)))) {
-                throw new \yii\web\BadRequestHttpException('Невозможно создать файл на сервере.', 400);
-            }
-            fclose($fp);
-
-            $file = new File();
-            $file->data = $path . '/' . $filename;
-            $file->queue_id = $this->id;
-            $file->type = $type;
-
-            if (!$file->save()) {
-                throw new \Exception(json_encode($file->errors));
-            }
-
+        $path = Yii::getAlias('@app');
+        exec("php ".$path."/yii queue", $output, $return_var);
+        return $output;
     }
 }

@@ -17,7 +17,7 @@ class PassportHandler implements ScanHandlerInterface
     public function handle($file): string
     {
         $token = uniqid();
-        $scan = file_get_contents($file->data);
+        $scan = file_get_contents($file->getUploadedFilePath('data'));
         $queue = $file->queue;
         $abonent_data = (array)json_decode($queue->abonent_data);
         $needles = $abonent_data;

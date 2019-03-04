@@ -15,8 +15,7 @@ class WithSignHandler implements ScanHandlerInterface
 {
     public function handle($file) :string
     {
-        exec("python3.6 /var/www/html/queue/python/recognize.py ".$file->data. ' '.$file->id, $output, $return_var);
-
+        exec("python3.6 /var/www/html/queue/python/recognize.py ".$file->getUploadedFilePath('data'). ' '.$file->id, $output, $return_var);
         if ($return_var === 1) {
             throw new \Exception("Расспознование подписи завершилось с ошибкой");
         }

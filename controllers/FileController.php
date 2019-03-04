@@ -2,23 +2,24 @@
 
 namespace app\controllers;
 
+use app\queue\CreateThumbsJob;
+use app\queue\EDO_FL_Client;
+use app\queue\handlers\PassportHandler;
+use app\queue\handlers\WithSignHandler;
+use app\services\RecognizeService;
 use yii;
 use app\models\Queue;
-use app\models\File;
 use app\models\User;
-use app\models\scan_service\SquaredScan;
 use yii\base\Exception;
 use yii\rest\ActiveController;
 use app\queue\ScanDocJob;
-use app\queue\EDO_FL_Client;
 use yii\web\UnauthorizedHttpException;
-use app\models\scan_service\COCREngine;
 use app\queue\QueueStorage;
-use app\models\scan_service\ImageMagickCommands;
 
 class FileController extends ActiveController
 {
     public $modelClass = 'app\models\Queue';
+    public $service;
 
         public function beforeAction($action)
         {
@@ -46,6 +47,7 @@ class FileController extends ActiveController
 
     public function actionCreate()
     {
+        $time = microtime(true);
 
         $edofl = Yii::$app->request->post('edofl');
         $queueStorage = new QueueStorage($edofl);
@@ -70,6 +72,10 @@ class FileController extends ActiveController
                     'idQueue' => $queue->id,
                     'abonentIdentifier' => $queueStorage->abonentIdentifier
                 ]));
+
+                Yii::$app->queueThumbs->push(new CreateThumbsJob([
+                    'idQueue' => $queue->id,
+                ]));
             }else{
                 throw new Exception(json_encode($queue->errors));
             }
@@ -81,13 +87,16 @@ class FileController extends ActiveController
 
         if ($id_event === null) $transaction->rollBack();
         $transaction->commit();
-        return $queue->id;
+        $time = microtime(true) - $time;
+        return $queue->id . ' ' .         $time;
 
     }
 
     public function actionTest($id)
     {
         $queue = Queue::findOne($id);
+        $this->service = new RecognizeService(new EDO_FL_Client(), new PassportHandler(), new WithSignHandler());
+        $this->service->recognize($queue);
     }
 
 

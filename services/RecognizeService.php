@@ -45,7 +45,8 @@ class RecognizeService
         foreach ($files as $file) {
 
             try {
-                if (filesize($file->data) > 1024*1024*10) {
+
+                if (filesize($file->getUploadedFilePath('data')) > 1024*1024*10) {
                     throw new Exception("Big size", 1);
                 }
 

@@ -7,7 +7,15 @@ use yii\helpers\Html;
 $this->title = 'My Yii Application';
 ?>
 <div class="site-index">
-    <h1>Очереди</h1>
+    <h1>Документы</h1>
+<div class="pull-right">
+<?php
+foreach ($infoQueue as $val){
+    echo $val;
+}
+?>
+</div>
+
 <?php
 /*Pjax::begin();*/
     echo GridView::widget([
@@ -15,6 +23,17 @@ $this->title = 'My Yii Application';
         'filterModel' => $searchModel,
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
+            [
+                'attribute' => 'files',
+                'label'=>'Images',
+                 'content'=>function($data){
+                    $string = '';
+                    foreach ($data->files as $file){
+                        $string .= Html::img($file->getThumbFileUrl('data'));
+                    }
+                    return $string;
+                }
+            ],
             'id',
             [
                 'attribute' => 'status',
@@ -36,7 +55,6 @@ $this->title = 'My Yii Application';
                                     ['site/download-result', 'id' => $data->id]), ['target'=>'_blank']);
                     }else if ($data->result === true) {
                         return Html::tag('span', 'Документы подписаны.', ['style' => 'color:green;']) . Html::a('Скачать оригиналы', yii\helpers\Url::toRoute(['site/download-result', 'id' => $data->id]), ['target' => '_blank']);
-                        //   return Html::tag('span','Документ подсписан', [ 'style'=> 'color:green;']);
                     }else{
                         return Html::a('Скачать оригиналы', yii\helpers\Url::toRoute(['site/download-result', 'id' => $data->id]), ['target' => '_blank']);
                     }
