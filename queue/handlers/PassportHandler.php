@@ -8,6 +8,7 @@
 
 namespace app\queue\handlers;
 
+use app\models\File;
 use app\models\scan_service\COCREngine;
 use app\queue\handlers\ScanHandlerInterface;
 

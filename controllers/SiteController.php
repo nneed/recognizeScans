@@ -74,7 +74,7 @@ class SiteController extends Controller
         return $this->render('index', [
             'dataProvider' => $dataProvider,
             'searchModel' => $searchModel,
-            'infoQueue' => $infoQueue
+            'infoQueue' => $infoQueue??[]
         ]);
     }
 

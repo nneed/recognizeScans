@@ -123,7 +123,7 @@ if os.path.exists(file_path):
        signs = file_path_result+"/signs"
        if not os.path.exists(signs):
          os.makedirs(signs)
-       cv2.imwrite(signs + "/"+file_name+".jpg", image)
+       cv2.imwrite(signs + "/"+file_name+".jpg", crop)
        #cv2.imwrite(signs+"/1.jpg", crop)       
     else:
    #    print(x,'cntapprox:',len(approx),'sq:', sq,'areaCrop:',areaCrop,'ratioCrop:',ratioCrop)
